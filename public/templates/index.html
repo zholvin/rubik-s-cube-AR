@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8"/>
+        <title>Rubik's Cube AR</title>
+        <link rel="stylesheet" href="style/index.css">
+    </head>
+
+    <script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>
+    <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/1.6.2/aframe/build/aframe-ar.js"></script>
+
+    <body style="margin: 0px; overflow: hidden;">
+            <a-scene
+                embedded arjs="sourceType: webcam;" renderer="preserveDrawingBuffer: true;">
+                <a-marker preset="hiro">
+                    <a-entity
+                        position="0 0 0"
+                        scale="0.5 0.5 0.5"
+                        gltf-model="url(/models/RBsCubeWorldOrigin.glb)">
+                        <a-animation
+                            attribute="rotation"
+                            to="0 0 0"
+                            dur="1000"
+                            repeat="indefinite"
+                            easing="linear">
+                        </a-animation>
+                    </a-entity>
+                </a-marker>
+                <a-entity camera></a-entity>
+            </a-scene>
+    </body>
+</html>
+
