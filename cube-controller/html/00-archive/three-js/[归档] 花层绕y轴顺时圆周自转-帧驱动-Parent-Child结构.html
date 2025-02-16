@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script>
+        AFRAME.registerComponent('sinusoidal-movement', {
+            schema: { speed: { type: 'number', default: 1 } },
+
+            init: function () {
+                this.rotationTarget = 0;
+                this.isRotating = false;
+                this.scene = this.el.sceneEl;
+                this.oldParent = this.el; // 记录当前 parent
+                this.originalChildren = Array.from(this.el.children); // 记录初始子元素
+                this.bindKeyEvents();
+            },
+
+            bindKeyEvents: function () {
+                window.addEventListener('keydown', (event) => {
+                    if (event.key.toLowerCase() === 'r' && !this.isRotating) {
+                        this.startRotation();
+                    }
+                });
+            },
+
+            startRotation: function () {
+                this.isRotating = true;
+                this.rotationTarget -= Math.PI / 2;
+            },
+
+            tick: function (time, timeDelta) {
+                if (!this.isRotating) return;
+
+                let step = (timeDelta / 1000) * this.data.speed * Math.PI / 1.5;
+                let currentRotation = this.oldParent.object3D.rotation.y;
+
+                if (currentRotation > this.rotationTarget) {
+                    this.oldParent.object3D.rotation.y -= step;
+                    if (this.oldParent.object3D.rotation.y <= this.rotationTarget) {
+                        this.oldParent.object3D.rotation.y = this.rotationTarget;
+                        this.isRotating = false;
+                        this.createNewParent(); // 旋转完成后创建新 parent
+                    }
+                }
+            },
+
+            createNewParent: function () {
+                // **1. 先检查 scene 里是否已经有 "newParent"，如果有，先删除**
+                let existingNewParent = this.scene.querySelector('.newParent');
+                if (existingNewParent) {
+                    this.scene.removeChild(existingNewParent);
+                }
+
+                let newParent = document.createElement('a-entity');
+                newParent.setAttribute('sinusoidal-movement', 'speed: 1');
+                newParent.setAttribute('class', 'newParent');
+                newParent.object3D.rotation.y = this.rotationTarget;
+                this.scene.appendChild(newParent);
+
+                this.originalChildren.forEach(child => {
+                    let worldPos = new THREE.Vector3();
+                    let worldQuat = new THREE.Quaternion();
+
+                    child.object3D.getWorldPosition(worldPos);
+                    child.object3D.getWorldQuaternion(worldQuat);
+
+                    let newChild = document.createElement('a-box');
+                    newChild.setAttribute('width', '1');
+                    newChild.setAttribute('height', '1');
+                    newChild.setAttribute('depth', '1');
+                    newChild.setAttribute('color', child.getAttribute('color'));
+                    newChild.setAttribute('position', `${worldPos.x} ${worldPos.y} ${worldPos.z}`);
+                    newChild.object3D.quaternion.copy(worldQuat);
+                    newParent.appendChild(newChild);
+                });
+
+                // 等新 parent 加载完成后，先设置不可见
+                setTimeout(() => {
+                    this.oldParent.setAttribute('visible', `false`);
+                    this.oldParent = newParent; // 更新 oldParent
+                    for (let i = 0; i < this.scene.children.length; i++) {
+                            let child = this.scene.children[i];
+                            if (child.getAttribute('visible') === 'false') {
+                                this.scene.removeChild(child);
+                            }
+                        }
+                }, 1);
+            }
+        });
+    </script>
+</head>
+
+<body style="margin: 0px; overflow: hidden;">
+<a-scene>
+    <a-camera position="0 3 6"></a-camera>
+    <a-sky color="black"></a-sky>
+
+    <a-entity class="OldParent" rotation="0 0 0" sinusoidal-movement="speed: 1">
+        <a-box class="child" position="0 0 0" color="yellow" width="1" height="1" depth="1"></a-box>
+        <a-box class="child" position="0 0 1" color="red" width="1" height="1" depth="1"></a-box>
+        <a-box class="child" position="0 0 -1" color="red" width="1" height="1" depth="1"></a-box>
+        <a-box class="child" position="1 0 0" color="red" width="1" height="1" depth="1"></a-box>
+        <a-box class="child" position="1 0 1" color="green" width="1" height="1" depth="1"></a-box>
+        <a-box class="child" position="1 0 -1" color="green" width="1" height="1" depth="1"></a-box>
+        <a-box class="child" position="-1 0 0" color="red" width="1" height="1" depth="1"></a-box>
+        <a-box class="child" position="-1 0 1" color="green" width="1" height="1" depth="1"></a-box>
+        <a-box class="child" position="-1 0 -1" color="green" width="1" height="1" depth="1"></a-box>
+    </a-entity>
+</a-scene>
+</body>
+
+</html>

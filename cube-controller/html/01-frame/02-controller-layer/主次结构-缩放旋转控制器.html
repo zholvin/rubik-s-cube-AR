@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>A-Frame Keyboard Interaction Example</title>
+    <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+    <script>
+        // 注册主控组件
+        AFRAME.registerComponent('controller', {
+            init: function () {
+                // 监听键盘事件
+                window.addEventListener('keydown', (event) => {
+                    switch (event.key) {
+                        case 'r': // 'r' 键启动/停止旋转
+                            const spinComponent = this.el.components.spin;
+                            if (spinComponent) {
+                                spinComponent.data.speed = spinComponent.data.speed === 0 ? 1 : 0;
+                            }
+                            break;
+                        case '+': // '+' 键放大
+                            const scalableComponent = this.el.components.scalable;
+                            if (scalableComponent) {
+                                scalableComponent.scaleUp();
+                            }
+                            break;
+                        case '-': // '-' 键缩小
+                            const scalableComponentDown = this.el.components.scalable;
+                            if (scalableComponentDown) {
+                                scalableComponentDown.scaleDown();
+                            }
+                            break;
+                        case '0': // '0' 键重置缩放
+                            const scalableComponentReset = this.el.components.scalable;
+                            if (scalableComponentReset) {
+                                scalableComponentReset.resetScale();
+                            }
+                            break;
+                    }
+                });
+            }
+        });
+
+        // 注册旋转组件
+        AFRAME.registerComponent('spin', {
+            schema: {
+                speed: {type: 'number', default: 1}
+            },
+            tick: function (time, timeDelta) {
+                this.el.object3D.rotation.y += this.data.speed * timeDelta / 1000;
+            }
+        });
+
+        // 注册缩放组件
+        AFRAME.registerComponent('scalable', {
+            schema: {
+                factor: {type: 'number', default: 1.1}
+            },
+            init: function () {
+                this.originalScale = this.el.object3D.scale.clone();
+            },
+            scaleUp: function () {
+                this.el.object3D.scale.multiplyScalar(this.data.factor);
+            },
+            scaleDown: function () {
+                this.el.object3D.scale.multiplyScalar(1 / this.data.factor);
+            },
+            resetScale: function () {
+                this.el.object3D.scale.copy(this.originalScale);
+            }
+        });
+
+    </script>
+</head>
+<body>
+<a-scene>
+    <!-- 应用主控组件、旋转组件和缩放组件 -->
+    <a-box position="0 1.6 -3" color="tomato" controller spin scalable></a-box>
+</a-scene>
+</body>
+</html>
