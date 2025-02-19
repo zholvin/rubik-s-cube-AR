@@ -18,10 +18,7 @@
                     this.targetRotation = null;
                     this.isMoving = false;
                     this.isCenter = this.el.getAttribute('color') === 'navy';
-            
-                    // 计算最低 y 坐标
-                    this.calculateLowestY();
-            
+
                     this.bindKeyEvents();
                 },
             
@@ -33,6 +30,8 @@
             
                 bindKeyEvents: function () {
                     window.addEventListener('keydown', (event) => {
+
+                        this.calculateLowestY(); // 计算最低 y 坐标
                         if (this.isOnLowestLayer && !this.isMoving) {
                             if (event.key.toLowerCase() === 'q') {
                                 this.startMovementClock();
@@ -111,7 +110,7 @@
         </script>
         <a-assets>
             <img id="my-image" src="../../image.png">
-            <a-asset-item id="cube" src="../../RBsCubeWorldOrigin.glb"></a-asset-item>
+            <a-asset-item id="cube" src="../../../RBsCubeWorldOrigin.glb"></a-asset-item>
         </a-assets>
     </head>
 

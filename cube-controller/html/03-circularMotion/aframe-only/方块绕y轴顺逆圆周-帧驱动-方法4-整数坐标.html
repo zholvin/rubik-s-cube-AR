@@ -5,15 +5,16 @@
     <script>
         AFRAME.registerComponent('rotation-controller', {
             schema: {
-                radius: { type: 'number', default: 1 }, // 圆的半径
-                speed: { type: 'number', default: 3 } // 控制旋转速度
+                radius: { type: 'number', default: 1 }, // 旋转半径
+                speed: { type: 'number', default: 90 }, // 旋转速度（度/秒）
+                axis: { type: 'string', default: 'y' } // 旋转轴（默认绕Y轴）
             },
 
             init: function () {
-                this.angle = 0; // 初始角度（弧度）
-                this.targetAngle = 0; // 目标角度
-                this.isMoving = false;
-                this.initialPosition = this.el.object3D.position.clone(); // 记录初始位置
+                this.angle = 0; // 当前角度（度）
+                this.targetAngle = null; // 目标角度
+                this.isMoving = false; // 旋转状态
+                this.originalPosition = this.el.object3D.position.clone(); // 记录初始位置
                 this.bindKeyEvents();
             },
 
@@ -21,41 +22,48 @@
                 window.addEventListener('keydown', (event) => {
                     if (!this.isMoving) {
                         if (event.key.toLowerCase() === 'q') {
-                            this.moveQuarterCircle(-1); // 顺时针
-                        } else if (event.key.toLowerCase() === 'r') {
-                            this.moveQuarterCircle(1); // 逆时针
+                            this.startMovement(-90); // 顺时针
+                        } else if (event.key.toLowerCase() === 'e') {
+                            this.startMovement(90); // 逆时针
                         }
                     }
                 });
             },
 
-            moveQuarterCircle: function (direction) {
-                if (!this.isMoving) {
-                    this.isMoving = true;
-                    this.targetAngle += direction * (Math.PI / 2); // 顺时针(-1) or 逆时针(1)
-                }
+            startMovement: function (deltaAngle) {
+                this.isMoving = true;
+                this.targetAngle = this.angle + deltaAngle;
             },
 
             tick: function (time, timeDelta) {
-                if (!this.isMoving) return;
-
-                let step = (timeDelta / 1000) * this.data.speed; // 旋转速度，每秒更新
-
-                // 逐步调整角度，直到达到目标角度
-                if ((this.angle < this.targetAngle && this.angle + step >= this.targetAngle) ||
-                    (this.angle > this.targetAngle && this.angle - step <= this.targetAngle)) {
-                    this.angle = this.targetAngle;
-                    this.isMoving = false; // 达到目标角度后停止旋转
-                } else {
-                    this.angle += (this.angle < this.targetAngle ? step : -step);
+                if (this.isMoving) {
+                    this.updateRotation(timeDelta);
+                    this.updatePosition();
                 }
+            },
 
-                // 计算围绕 Z 轴的旋转
-                let x = this.initialPosition.x + Math.sin(this.angle) * this.data.radius;
-                let y = this.initialPosition.y + Math.cos(this.angle) * this.data.radius;
-                let z = this.initialPosition.z;
+            updateRotation: function (timeDelta) {
+                let step = (timeDelta / 1000) * this.data.speed; // 计算旋转步长
+                this.angle = THREE.MathUtils.lerp(this.angle, this.targetAngle, 0.1); // 平滑插值
 
-                this.el.object3D.position.set(x, y, z);
+                if (Math.abs(this.angle - this.targetAngle) < 0.5) { // 接近目标角度
+                    this.angle = this.targetAngle;
+                    this.isMoving = false;
+                }
+            },
+
+            updatePosition: function () {
+                let radian = THREE.MathUtils.degToRad(this.angle);
+                let { x: ox, y: oy, z: oz } = this.originalPosition;
+
+                if (this.data.axis === 'y') {
+                    let targetX = ox + this.data.radius * Math.cos(radian);
+                    let targetZ = oz + this.data.radius * Math.sin(radian);
+
+                    // 平滑过渡位置
+                    let currentPos = this.el.object3D.position;
+                    currentPos.lerp(new THREE.Vector3(targetX, oy, targetZ), 0.1);
+                }
             }
         });
     </script>

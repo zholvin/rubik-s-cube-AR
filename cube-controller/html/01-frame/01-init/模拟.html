@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script>
+        // 轨道运动组件（默认静止）
+        AFRAME.registerComponent('orbital-motion', {
+            schema: {
+                speed: { type: 'number', default: 1 },
+                paused: { type: 'boolean', default: true } // 默认暂停
+            },
+
+            init: function () {
+                const pos = this.el.getAttribute('position');
+                this.initialPosition = new THREE.Vector3(pos.x, pos.y, pos.z);
+                this.radius = Math.sqrt(pos.x ** 2 + pos.y ** 2);
+                this.angle = Math.atan2(pos.y, pos.x);
+            },
+
+            tick: function (_, delta) {
+                if (this.data.paused || this.radius === 0) return;
+
+                this.angle += delta / 1000 * this.data.speed;
+                const newX = this.radius * Math.cos(this.angle);
+                const newY = this.radius * Math.sin(this.angle);
+                this.el.setAttribute('position', {
+                    x: newX,
+                    y: newY,
+                    z: this.initialPosition.z
+                });
+            }
+        });
+
+        // 自转控制器组件（保留V键自转）
+        AFRAME.registerComponent('rotation-controller', {
+            schema: {
+                speed: { type: 'number', default: 1 }
+            },
+
+            init: function () {
+                this.remainingRotation = 0;
+                this.worldAxis = new THREE.Vector3();
+                this.keyMap = {
+                    'q': ['x', 1], 'e': ['x', -1],
+                    'z': ['y', 1], 'x': ['y', -1]
+                };
+
+                this.onKeyDown = (e) => {
+                    if (this.remainingRotation !== 0) return;
+                    const config = this.keyMap[e.key.toLowerCase()];
+                    if (!config) return;
+                    this.startRotation(...config);
+                };
+                window.addEventListener('keydown', this.onKeyDown);
+            },
+
+            startRotation: function (axis, dir) {
+                const axes = {
+                    x: [1, 0, 0],
+                    y: [0, 1, 0],
+                    z: [0, 0, 1]
+                };
+                this.worldAxis.set(...axes[axis]).normalize();
+                this.remainingRotation = dir * Math.PI/2;
+            },
+
+            tick: function (_, delta) {
+                if (Math.abs(this.remainingRotation) < 0.001) return;
+
+                const angle = Math.min(
+                    Math.abs(this.remainingRotation),
+                    delta/1000 * this.data.speed
+                ) * Math.sign(this.remainingRotation);
+
+                this.el.object3D.rotateOnWorldAxis(this.worldAxis, angle);
+                this.remainingRotation -= angle;
+            },
+
+            remove: function () {
+                window.removeEventListener('keydown', this.onKeyDown);
+            }
+        });
+
+        // 全局Z轴旋转控制器（C/V键控制）
+        AFRAME.registerComponent('global-z-rotation', {
+            schema: {
+                isRotating: { type: 'boolean', default: false },
+                progress: { type: 'number', default: 0 },
+                duration: { type: 'number', default: 500 }
+            },
+
+            init: function () {
+                this.onKeyDown = (e) => {
+                    const key = e.key.toLowerCase();
+                    if ((key === 'c' || key === 'v') && !this.data.isRotating) {
+                        this.startRotation(key === 'c' ? 1 : -1);
+                    }
+                };
+                window.addEventListener('keydown', this.onKeyDown);
+            },
+
+            startRotation: function (direction) {
+                this.blocks = Array.from(document.querySelectorAll('[orbital-motion]'))
+                    .filter(block => {
+                        const comp = block.components['orbital-motion'];
+                        return comp && comp.radius !== 0;
+                    });
+
+                const angle = direction * Math.PI/2;
+
+                this.blocks.forEach(block => {
+                    block.setAttribute('orbital-motion', 'paused', true);
+                    const pos = block.getAttribute('position');
+                    const x = pos.x, y = pos.y;
+
+                    block.userData = {
+                        startX: x,
+                        startY: y,
+                        targetX: x * Math.cos(angle) - y * Math.sin(angle),
+                        targetY: x * Math.sin(angle) + y * Math.cos(angle)
+                    };
+                });
+
+                this.data.progress = 0;
+                this.data.isRotating = true;
+            },
+
+            tick: function (time, delta) {
+                if (!this.data.isRotating) return;
+
+                this.data.progress += delta;
+                const t = Math.min(this.data.progress / this.data.duration, 1);
+
+                this.blocks.forEach(block => {
+                    const startX = block.userData.startX;
+                    const startY = block.userData.startY;
+                    const currentX = startX + (block.userData.targetX - startX) * t;
+                    const currentY = startY + (block.userData.targetY - startY) * t;
+
+                    block.setAttribute('position', {
+                        x: currentX,
+                        y: currentY,
+                        z: block.getAttribute('position').z
+                    });
+                });
+
+                if (t === 1) {
+                    this.blocks.forEach(block => {
+                        const orbital = block.components['orbital-motion'];
+                        const pos = block.getAttribute('position');
+
+                        orbital.initialPosition.set(pos.x, pos.y, pos.z);
+                        orbital.radius = Math.sqrt(pos.x ** 2 + pos.y ** 2);
+                        orbital.angle = Math.atan2(pos.y, pos.x);
+
+                        // 恢复自动旋转
+                        block.setAttribute('orbital-motion', 'paused', false);
+                    });
+                    this.data.isRotating = false;
+                }
+            },
+
+            remove: function () {
+                window.removeEventListener('keydown', this.onKeyDown);
+            }
+        });
+    </script>
+    </script>
+</head>
+
+<body style="margin: 0; overflow: hidden;">
+<a-assets>
+    <img id="my-image" src="../../image.png">
+    <a-asset-item id="cube" src="../../../RBsCubeWorldOrigin.glb"></a-asset-item>
+</a-assets>
+
+<a-scene global-z-rotation>
+    <a-sky color="black"></a-sky>
+    <a-camera position="0 3 13"></a-camera>
+
+    <!-- 场景装饰元素 -->
+    <a-curvedimage src="#my-image" height="200" radius="140" theta-length="160"
+                   rotation="0 120 0" position="0 0 0"></a-curvedimage>
+    <a-curvedimage color="#570000" metalness="10" rotation="0 0 0"
+                   position="0 0 0" height="0.2" radius="5" theta-length="360"></a-curvedimage>
+    <a-text value="Dev Mode" color="white" position="-1 11 0"
+            font="https://cdn.aframe.io/fonts/DejaVu-sdf.fnt"></a-text>
+    <a-torus-knot color="#B84A39" position="-10 25 -60"
+                  arc="180" p="2" q="9" radius="1" radius-tubular="0.05"></a-torus-knot>
+
+    <!-- 立方体系统 -->
+    <a-entity class="RBsCube">
+        <!-- 中心块 -->
+        <a-gltf-model rotation-controller orbital-motion
+                      src="#cube" position="0 0 0" radius="0"></a-gltf-model>
+
+        <!-- 棱块 -->
+        <a-gltf-model rotation-controller orbital-motion="speed: 1"
+                      src="#cube" position="1 0 0" radius="1"></a-gltf-model>
+        <a-gltf-model rotation-controller orbital-motion="speed: 1"
+                      src="#cube" position="-1 0 0" radius="1"></a-gltf-model>
+        <a-gltf-model rotation-controller orbital-motion="speed: 1"
+                      src="#cube" position="0 1 0" radius="1"></a-gltf-model>
+        <a-gltf-model rotation-controller orbital-motion="speed: 1"
+                      src="#cube" position="0 -1 0" radius="1"></a-gltf-model>
+
+        <!-- 角块 -->
+        <a-gltf-model rotation-controller orbital-motion="speed: 1"
+                      src="#cube" position="1 1 0" radius="1.414"></a-gltf-model>
+        <a-gltf-model rotation-controller orbital-motion="speed: 1"
+                      src="#cube" position="1 -1 0" radius="1.414"></a-gltf-model>
+        <a-gltf-model rotation-controller orbital-motion="speed: 1"
+                      src="#cube" position="-1 1 0" radius="1.414"></a-gltf-model>
+        <a-gltf-model rotation-controller orbital-motion="speed: 1"
+                      src="#cube" position="-1 -1 0" radius="1.414"></a-gltf-model>
+    </a-entity>
+</a-scene>
+</body>
+</html>

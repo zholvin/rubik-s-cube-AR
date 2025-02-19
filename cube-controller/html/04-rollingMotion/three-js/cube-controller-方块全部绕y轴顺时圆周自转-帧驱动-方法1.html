@@ -23,7 +23,7 @@
 
                 bindKeyEvents: function () {
                     window.addEventListener('keydown', (event) => {
-                        if (event.key.toLowerCase() === 'r' && !this.isMoving) {          
+                        if (event.key.toLowerCase() === 'q' && !this.isMoving) {
                             this.startMovement();
                         }
                     });
@@ -78,7 +78,7 @@
         </script>
         <a-assets>
             <img id="my-image" src="../../image.png">
-            <a-asset-item id="cube" src="../../RBsCubeWorldOrigin.glb"></a-asset-item>
+            <a-asset-item id="cube" src="../../../RBsCubeWorldOrigin.glb"></a-asset-item>
         </a-assets>
     </head>
 
