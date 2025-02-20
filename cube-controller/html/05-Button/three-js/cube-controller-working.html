@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Rubik's Cube Moves with On‑Screen Buttons</title>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script>
+        // Component attached to each cube piece.
+        AFRAME.registerComponent('cube-controller', {
+            schema: {
+                // Speed in degrees per second for face moves.
+                speed: { type: 'number', default: 270 }
+            },
+            init: function () {
+                // Face rotation state.
+                this.faceMoveActive = false;
+                this.isMoving = false;
+                this.moveQueue = [];
+                this.movePivot = null;
+                this.moveAxis = null;
+                this.totalAngle = 0;
+                this.remainingAngle = 0;
+            },
+            /**
+             * Queues or immediately starts a face rotation move.
+             * @param {THREE.Vector3} pivot - The center of the face.
+             * @param {THREE.Vector3} axis  - The normal (rotation axis) of the face.
+             * @param {number} angle        - The rotation angle (in degrees).
+             */
+            handleFaceRotation: function(pivot, axis, angle) {
+                if (this.isMoving) {
+                    this.moveQueue.push({ pivot: pivot.clone(), axis: axis.clone(), angle: angle });
+                    return;
+                }
+                this.startFaceRotation(pivot, axis, angle);
+            },
+            startFaceRotation: function(pivot, axis, angle) {
+                this.faceMoveActive = true;
+                this.movePivot = pivot.clone();
+                this.moveAxis = axis.clone().normalize();
+                // Convert the desired angle (in degrees) to radians.
+                this.totalAngle = THREE.MathUtils.degToRad(angle);
+                this.remainingAngle = this.totalAngle;
+                this.isMoving = true;
+            },
+            tick: function(_, deltaTime) {
+                if (!this.faceMoveActive) return;
+                const timeFactor = deltaTime / 1000;
+                let step = THREE.MathUtils.degToRad(this.data.speed) * timeFactor;
+                if (Math.abs(step) > Math.abs(this.remainingAngle)) {
+                    step = this.remainingAngle;
+                } else {
+                    step = Math.sign(this.remainingAngle) * step;
+                }
+                // Update the cube's position relative to the pivot.
+                const pos = this.el.object3D.position;
+                pos.sub(this.movePivot);
+                pos.applyAxisAngle(this.moveAxis, step);
+                pos.add(this.movePivot);
+                // Rotate the cube's orientation.
+                this.el.object3D.rotateOnWorldAxis(this.moveAxis, step);
+                this.remainingAngle -= step;
+                if (Math.abs(this.remainingAngle) < 0.001) {
+                    this.faceMoveActive = false;
+                    this.isMoving = false;
+                    if (this.moveQueue.length > 0) {
+                        const nextMove = this.moveQueue.shift();
+                        this.startFaceRotation(nextMove.pivot, nextMove.axis, nextMove.angle);
+                    }
+                }
+            }
+        });
+
+        // This function is called when an on‑screen button is clicked.
+        function triggerMove(moveCode) {
+            // Determine the face (first character) and move angle.
+            const face = moveCode[0].toLowerCase();
+            let angle;
+            if (moveCode.includes("2")) {
+                angle = -180; // Half-turn
+            } else if (moveCode.includes("'") || moveCode.includes("′")) {
+                angle = 90;   // Prime move (counter‑clockwise)
+            } else {
+                angle = -90;  // Standard move (clockwise)
+            }
+
+            // Define pivot and axis based on the face.
+            let pivot, axis;
+            switch(face) {
+                case 'f': // Front face (z = 1)
+                    pivot = new THREE.Vector3(0, 0, 1);
+                    axis = new THREE.Vector3(0, 0, 1);
+                    break;
+                case 'b': // Back face (z = -1)
+                    pivot = new THREE.Vector3(0, 0, -1);
+                    axis = new THREE.Vector3(0, 0, -1);
+                    break;
+                case 'u': // Up face (y = 1)
+                    pivot = new THREE.Vector3(0, 1, 0);
+                    axis = new THREE.Vector3(0, 1, 0);
+                    break;
+                case 'd': // Down face (y = -1)
+                    pivot = new THREE.Vector3(0, -1, 0);
+                    axis = new THREE.Vector3(0, -1, 0);
+                    break;
+                case 'l': // Left face (x = -1)
+                    pivot = new THREE.Vector3(-1, 0, 0);
+                    axis = new THREE.Vector3(-1, 0, 0);
+                    break;
+                case 'r': // Right face (x = 1)
+                    pivot = new THREE.Vector3(1, 0, 0);
+                    axis = new THREE.Vector3(1, 0, 0);
+                    break;
+                default:
+                    console.error("Unknown move code: " + moveCode);
+                    return;
+            }
+
+            // Use a tolerance to decide if a cube piece belongs to the face.
+            const tolerance = 0.1;
+            document.querySelectorAll('.cube').forEach(cube => {
+                if (!cube.components || !cube.components['cube-controller']) return;
+                const pos = cube.object3D.position;
+                let belongs = false;
+                switch(face) {
+                    case 'f':
+                        belongs = Math.abs(pos.z - 1) < tolerance;
+                        break;
+                    case 'b':
+                        belongs = Math.abs(pos.z + 1) < tolerance;
+                        break;
+                    case 'u':
+                        belongs = Math.abs(pos.y - 1) < tolerance;
+                        break;
+                    case 'd':
+                        belongs = Math.abs(pos.y + 1) < tolerance;
+                        break;
+                    case 'l':
+                        belongs = Math.abs(pos.x + 1) < tolerance;
+                        break;
+                    case 'r':
+                        belongs = Math.abs(pos.x - 1) < tolerance;
+                        break;
+                }
+                if (belongs) {
+                    cube.components['cube-controller'].handleFaceRotation(pivot, axis, angle);
+                }
+            });
+        }
+    </script>
+    <style>
+        /* Styles for the on‑screen control panel */
+        #move-buttons {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+        }
+        #move-buttons button {
+            margin: 5px;
+            padding: 8px 12px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body style="margin: 0; overflow: hidden;">
+<a-scene>
+    <a-assets>
+        <!-- Replace these asset paths as needed -->
+        <img id="my-image" src="../../image.png">
+        <a-asset-item id="cube" src="../../../RBsCubeWorldOrigin.glb"></a-asset-item>
+    </a-assets>
+    <a-sky color="LightBlue"></a-sky>
+    <a-camera position="0 5 13"></a-camera>
+    <a-text value="Dev Mode" color="white" width="10" position="-1 11 0" font="https://cdn.aframe.io/fonts/DejaVu-sdf.fnt"></a-text>
+
+    <!-- Rubik's Cube assembly -->
+    <a-entity class="RBsCube">
+        <!-- Center pieces (non-movable) -->
+        <a-gltf-model src="#cube" class="cube center" position="0 0 0" cube-controller></a-gltf-model>
+        <a-gltf-model src="#cube" class="cube center" position="0 -1 0" cube-controller></a-gltf-model>
+        <a-gltf-model src="#cube" class="cube center" position="0 1 0" cube-controller></a-gltf-model>
+        <a-gltf-model src="#cube" class="cube center" position="0 0 1" cube-controller></a-gltf-model>
+        <a-gltf-model src="#cube" class="cube center" position="1 0 0" cube-controller></a-gltf-model>
+        <a-gltf-model src="#cube" class="cube center" position="0 0 -1" cube-controller></a-gltf-model>
+        <a-gltf-model src="#cube" class="cube center" position="-1 0 0" cube-controller></a-gltf-model>
+        <!-- Edge pieces -->
+        <a-gltf-model src="#cube" class="cube edge" position="0 1 1" cube-controller></a-gltf-model>
+        <a-gltf-model src="#cube" class="cube edge" position="1 1 0" cube-controller></a-gltf-model>
+        <a-gltf-model src="#cube" class="cube edge" position="0 1 -1" cube-controller></a-gltf-model>
+        <a-gltf-model src="#cube" class="cube edge" position="-1 1 0" cube-controller></a-gltf-model>
+        <a-gltf-model src="#cube" class="cube edge" position="0 -1 1" cube-controller></a-gltf-model>
+        <a-gltf-model src="#cube" class="cube edge" position="1 -1 0" cube-controller></a-gltf-model>
+        <a-gltf-model src="#cube" class="cube edge" position="0 -1 -1" cube-controller></a-gltf-model>
+        <a-gltf-model src="#cube" class="cube edge" position="-1 -1 0" cube-controller></a-gltf-model>
+        <a-gltf-model src="#cube" class="cube edge" position="-1 0 -1" cube-controller></a-gltf-model>
+        <a-gltf-model src="#cube" class="cube edge" position="1 0 -1" cube-controller></a-gltf-model>
+        <a-gltf-model src="#cube" class="cube edge" position="-1 0 1" cube-controller></a-gltf-model>
+        <a-gltf-model src="#cube" class="cube edge" position="1 0 1" cube-controller></a-gltf-model>
+        <!-- Corner pieces -->
+        <a-gltf-model src="#cube" class="cube corner" position="1 1 1" cube-controller></a-gltf-model>
+        <a-gltf-model src="#cube" class="cube corner" position="-1 1 -1" cube-controller></a-gltf-model>
+        <a-gltf-model src="#cube" class="cube corner" position="1 1 -1" cube-controller></a-gltf-model>
+        <a-gltf-model src="#cube" class="cube corner" position="-1 1 1" cube-controller></a-gltf-model>
+        <a-gltf-model src="#cube" class="cube corner" position="1 -1 1" cube-controller></a-gltf-model>
+        <a-gltf-model src="#cube" class="cube corner" position="1 -1 -1" cube-controller></a-gltf-model>
+        <a-gltf-model src="#cube" class="cube corner" position="-1 -1 1" cube-controller></a-gltf-model>
+        <a-gltf-model src="#cube" class="cube corner" position="-1 -1 -1" cube-controller></a-gltf-model>
+    </a-entity>
+</a-scene>
+
+<!-- On‑screen control panel with buttons.
+     We use data-move to store the move code to avoid quote escaping issues. -->
+<div id="move-buttons">
+    <!-- Front face moves -->
+    <button data-move="F" onclick="triggerMove(this.getAttribute('data-move'))">F</button>
+    <button data-move="F'" onclick="triggerMove(this.getAttribute('data-move'))">F′</button>
+    <button data-move="F2" onclick="triggerMove(this.getAttribute('data-move'))">F2</button>
+    <!-- Back face moves -->
+    <button data-move="B" onclick="triggerMove(this.getAttribute('data-move'))">B</button>
+    <button data-move="B'" onclick="triggerMove(this.getAttribute('data-move'))">B′</button>
+    <button data-move="B2" onclick="triggerMove(this.getAttribute('data-move'))">B2</button>
+    <!-- Up face moves -->
+    <button data-move="U" onclick="triggerMove(this.getAttribute('data-move'))">U</button>
+    <button data-move="U'" onclick="triggerMove(this.getAttribute('data-move'))">U′</button>
+    <button data-move="U2" onclick="triggerMove(this.getAttribute('data-move'))">U2</button>
+    <!-- Down face moves -->
+    <button data-move="D" onclick="triggerMove(this.getAttribute('data-move'))">D</button>
+    <button data-move="D'" onclick="triggerMove(this.getAttribute('data-move'))">D′</button>
+    <button data-move="D2" onclick="triggerMove(this.getAttribute('data-move'))">D2</button>
+    <!-- Left face moves -->
+    <button data-move="L" onclick="triggerMove(this.getAttribute('data-move'))">L</button>
+    <button data-move="L'" onclick="triggerMove(this.getAttribute('data-move'))">L′</button>
+    <button data-move="L2" onclick="triggerMove(this.getAttribute('data-move'))">L2</button>
+    <!-- Right face moves -->
+    <button data-move="R" onclick="triggerMove(this.getAttribute('data-move'))">R</button>
+    <button data-move="R'" onclick="triggerMove(this.getAttribute('data-move'))">R′</button>
+    <button data-move="R2" onclick="triggerMove(this.getAttribute('data-move'))">R2</button>
+</div>
+</body>
+</html>
