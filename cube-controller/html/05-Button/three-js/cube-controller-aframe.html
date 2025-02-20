@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html>
+<html lang="English">
 <head>
     <meta charset="UTF-8">
     <title>Rubik's Cube Moves with On‑Screen Buttons</title>
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/master/aframe/build/aframe-ar.min.js"></script>
     <script>
         // Component attached to each cube piece.
         AFRAME.registerComponent('cube-controller', {
@@ -167,16 +168,17 @@
     </style>
 </head>
 <body style="margin: 0; overflow: hidden;">
-<a-scene>
-    <a-assets>
+<a-scene embedded arjs="sourceType: webcam; debugUIEnabled: true;">
+    <a-marker preset="hiro">
+        <a-entity>
         <!-- Replace these asset paths as needed -->
-        <img id="my-image" src="../../image.png">
-        <a-asset-item id="cube" src="../../../RBsCubeWorldOrigin.glb"></a-asset-item>
-    </a-assets>
-    <a-sky color="LightBlue"></a-sky>
-    <a-camera position="0 5 13"></a-camera>
-    <a-text value="Dev Mode" color="white" width="10" position="-1 11 0" font="https://cdn.aframe.io/fonts/DejaVu-sdf.fnt"></a-text>
-
+            position="0 0 0"
+            scale="1 1 1"
+            gltf-model="url(RBsCubeWorldOrigin.glb)">
+        </a-entity>
+        <a-text value="Dev Mode" color="white" width="10" position="-1 11 0" font="https://cdn.aframe.io/fonts/DejaVu-sdf.fnt"></a-text>
+    </a-marker>
+    <a-entity camera></a-entity>
     <!-- Rubik's Cube assembly -->
     <a-entity class="RBsCube">
         <!-- Center pieces (non-movable) -->
