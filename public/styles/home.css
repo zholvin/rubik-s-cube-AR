@@ -1,0 +1,37 @@
+html{
+    background-color: powderblue;
+}
+
+h1{
+    text-align: center;
+    padding: 1em;
+    margin: auto;
+    color:black;
+    font-style: italic;
+    font-size:5em;
+}
+
+#links ul{
+    list-style: none;
+}
+#links li{
+    text-align: center;
+    padding: 1em;
+    margin:auto;
+    margin-top: 1em;
+    border: 0.5em rgb(241, 156, 156);
+    border-style:solid;
+    background-color: rgb(58, 52, 50);
+    width:20em;
+    
+    
+    
+}
+#links li a{
+    color: rgb(240, 239, 239);
+    font-size: 3em;
+    text-align: center;
+    font-style: oblique;
+
+    
+}

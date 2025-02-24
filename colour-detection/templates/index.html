@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rubik's Cube Color Detection</title>
+    
+    <!-- This line ensures styles.css loads correctly -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1>Rubik's Cube Color Detection</h1>
+
+    <div class="container">
+        <div class="video-feed">
+            <img id="video-stream" src="{{ url_for('video_feed') }}" alt="Video Feed">
+        </div>
+        <div class="color-info">
+            <h2>Detected Colors</h2>
+            <div id="color-grid">
+                <div class="color-box" id="box-0-0"></div>
+                <div class="color-box" id="box-0-1"></div>
+                <div class="color-box" id="box-0-2"></div>
+                <div class="color-box" id="box-1-0"></div>
+                <div class="color-box" id="box-1-1"></div>
+                <div class="color-box" id="box-1-2"></div>
+                <div class="color-box" id="box-2-0"></div>
+                <div class="color-box" id="box-2-1"></div>
+                <div class="color-box" id="box-2-2"></div>
+            </div>
+            <button id="captureButton">Capture Cube Colors</button>
+        </div>
+    </div>
+
+    <!-- JavaScript file -->
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
