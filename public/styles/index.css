@@ -1,0 +1,130 @@
+html{
+    background-image: url(Rubikcube.jpg);
+    background-size: cover;
+    background-repeat:no-repeat;
+    background-attachment: fixed;
+}
+body{
+
+    overflow: hidden;
+    
+}
+
+
+video{
+    
+    width:75% !important;
+    height: 100%;
+    object-fit:cover;
+}
+@keyframes fadeInScale {
+    from {
+      opacity: 0;
+      transform: scale(0.5);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+#home{
+    position:absolute;
+    top: 0%;
+    left:75%;
+    list-style: none;
+}
+
+#home ul{
+    list-style: none;
+}
+#home li{
+    text-align: center;
+    padding: 1em;
+    margin:auto;
+    margin-top: 1em;
+    
+    
+    
+    
+}
+#home li a{
+    display: inline-block;
+    padding: 1vh 3vw;
+    background-color: #4CAF50;
+    color: white;
+    text-decoration: none;
+    border-radius: 10px;
+    font-size: clamp(20px, 3vw, 25px);
+    align-self: center;
+    font-family: "Baloo 2";
+    width: 7em;
+}
+#home li a:hover{
+    background-color: #236425;
+}
+#home li button{
+    display: inline-block;
+    padding: 1vh 3vw;
+    background-color: #4CAF50;
+    color: white;
+    text-decoration: none;
+    border-radius: 10px;
+    font-size: clamp(20px, 3vw, 25px);
+    align-self: center;
+    font-family: "Baloo 2";
+    width: 11.5em;
+    border-style: unset;
+}
+#home li button:hover{
+    background-color: #236425;
+}
+.modal {
+    display: none; /* Hide by default */
+    position: fixed; 
+    z-index: 1; 
+    padding-top: 100px; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+    overflow:hidden; 
+    opacity: 0;
+    transform: scale(0.9);
+    animation: fadeInScale 1s ease forwards;
+
+  }
+/* The modal content */
+.modal-content {
+    background-color: #69e97e;
+    margin: auto;
+    padding: auto;
+    border: 0.5em solid #000000;
+    border-radius: 10px;
+    width: 60%;
+    height: 60%;
+    text-align: center;
+    font-size: 1em;
+    font-weight: bold;
+  }
+  
+  /* The close button */
+  .close {
+    color: #000000;
+    float: right;
+    margin-right: 0.5em;
+    margin-top: 0.5em;
+    font-size: 3em;
+    font-weight: bold;
+    
+  }
+  
+  .close:hover,
+  .close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+
+
