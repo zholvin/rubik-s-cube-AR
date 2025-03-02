@@ -1,0 +1,1 @@
+when i reset colours nothing is saved in the cube_colors.jsonm
