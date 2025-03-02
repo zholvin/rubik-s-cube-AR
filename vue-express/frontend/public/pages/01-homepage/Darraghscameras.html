@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="icon" type="image/png" href="favicon-32x32.png">
+        <link rel="stylesheet" href="index.css">
+        <script src="https://aframe.io/releases/0.8.2/aframe.min.js"></script>
+        <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/1.6.2/aframe/build/aframe-ar.js"></script>
+        
+    
+    </head>
+    <body>
+        
+        
+            <a-scene embedded arjs="sourceType: webcam;">
+                <a-marker preset="hiro">
+                    <a-entity 
+                        position="-4.5 -4.5  0" 
+                        scale="1 1 1" 
+                        gltf-model="url(scene.gltf)">
+                        <a-animation 
+                            attribute="rotation"
+                            to="0 0 0"
+                            dur="1000"
+                            repeat="indefinite" 
+                            easing="linear">
+                        </a-animation>
+                    </a-entity>
+                </a-marker>
+                <a-entity camera></a-entity>
+        
+            </a-scene>
+            
+            <div>
+                <ul id=home>
+                    <li><a href="/index.html" >Home</a></li>
+                    <li><button id="myBtn">Instructions</button></li>
+                    <li><a href="/index.html" >Restart Program</a></li>
+                </ul>  
+                <div id="myModal" class="modal">
+
+                    <!-- Modal content -->
+                    <div class="modal-content">
+                        <span class="close">&times;</span>
+                        <h2>This displays the instructions on how to use this program. </h2>
+                        <p>Instructions</p>
+                    </div>
+                    <script src="index.js"></script>
+            </div> 
+           
+            </div>
+                
+            
+            
+        
+        
+    </body>
+</html>
+

@@ -1,0 +1,136 @@
+/*!* Set full height and remove right margin, set background to black *!*/
+/*html, body {*/
+/*    height: 100%;*/
+/*    background: black;*/
+/*    margin: 0;*/
+/*}*/
+
+/* Home frame with gradient background and padding */
+#home-frame {
+    border-radius: 25px;
+    background: linear-gradient(227deg, #81bee4 25%, #165b9c 95%);
+    padding-bottom: clamp(30px,10vh,500px);
+    margin: 3px;
+}
+
+/* Top navigation bar with flex layout */
+.topnav {
+    display: flex; /* Align logo and nav items in the same line */
+    align-items: center; /* Vertically center them */
+    justify-content: space-between; /* Align logo to the left and nav to the right */
+    padding: 25px 30px; /* Add some padding */
+}
+
+/* Logo styling */
+.topnav img#logo {
+    height: 50px; /* Set logo height */
+}
+
+/* Navigation bar styling */
+.topnav nav {
+    display: flex; /* Display links in a row */
+    flex-wrap: wrap; /* Allow links to wrap in small screens */
+}
+
+/* Style navigation links */
+.topnav nav a {
+    text-decoration: none;
+    padding: 5px 10px; /* Add padding for clickable links */
+    color: black;
+    font-size: clamp(15px, 2vw, 48px);
+    font-style: normal;
+    font-family: 'Raleway', sans-serif;
+    font-weight: 600;
+    line-height: normal;
+}
+
+/* Make main a flex container */
+.main {
+    display: flex;
+    align-items: center;  /* Vertically center the items */
+    justify-content: center;  /* Horizontally center the items */
+    flex-wrap: wrap; 
+    background: linear-gradient(227deg, #165b9c 20.72%, #81bee4 78.01%);
+    border-radius: 30px;
+    width: 95%;  /* Ensure main takes full width */
+    margin: 0 auto;  /* Center main */
+    box-sizing: border-box;  /* Include padding in width/height calculations */
+}
+
+/* Image styling on the left */
+#home-img {
+    width: clamp(250px, 30vw, 50vw);  /* Control the image width */
+    height: auto;  /* Maintain image aspect ratio */
+    margin-top: 4vh;
+    margin-bottom: 4vh;
+    margin-inline: 2vw;  /* Set left and right margins */
+}
+
+/* Styling for the content area */
+#home-content {
+    flex: 1;  /* Content area takes up remaining space */
+    text-align: center;  /* Center-align text */
+    border-radius: 27px;
+    background-color: skyblue;
+    padding-top: 3vh;
+    padding-bottom: 3vh;
+    padding-left: 1%;
+    padding-right: 1%;
+    box-sizing: border-box;  /* Include padding in width/height calculations */
+    margin-inline: 2vh;  /* Set left and right margins */
+    margin-top: clamp(2vh, 1vh, 10%); /*解释：clamp(最小值, 希望值, 最大值) */
+    margin-bottom: clamp(2vh, 1vh, 10%);
+}
+
+/* Beautify heading in content */
+#home-content h1 {
+    margin-bottom: 10px;
+    font-size: clamp(45px, 5vw, 100px);  /* Adjust font size */
+    font-family: "Gochi Hand", cursive;
+    margin-bottom: 1vh;
+}
+
+#home-content h2 {
+    color: #332623;
+    text-align: center;
+    font-family: "Baloo 2";
+    font-size: clamp(20px, 3vw, 40px);
+    font-style: normal;
+    font-weight: 600;
+    line-height: 140%;
+}
+
+/* Paragraph styling */
+#home-content p {
+    color: #332623;
+    text-align: center;
+    font-family: "Baloo 2";
+    font-size: clamp(10px, 2vw, 20px);
+    font-style: normal;
+    font-weight: 600;
+    line-height: 140%;
+    width: 80%;  /* Set paragraph width */
+    margin: 0 auto;  /* Horizontally center the paragraph */
+    margin-bottom: 5vh;
+}
+
+/* Styling for the call-to-action button */
+#home-content a {
+    font-family: "Baloo 2";
+    font-size: clamp(12px, 3vw, 25px);
+    text-decoration: none;
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 1% auto;  /* 让块级元素居中 */
+    width: clamp(250px, 30vw, 300px); /* 修正最后的最大宽度 */
+    padding: 10px 20px;
+}
+
+/* Button hover effect */
+#home-content a:hover {
+    background-color: #4b734e;
+}
