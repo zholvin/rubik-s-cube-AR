@@ -24,17 +24,31 @@
             padding: 8px 12px;
             font-size: 14px;
         }
+        /* Styling for the file upload label */
+        #file-label {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        /* Hide the actual file input */
+        #move-file {
+            display: none;
+        }
     </style>
 </head>
 <!-- Include A-Frame and AR.js libraries -->
 <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.min.js"></script>
 <script>
-    // Original whole-cube controller remains unchanged.
+    // Whole-cube controller
     AFRAME.registerComponent('rbscube-controller', {
         init: function () {
-            let isAnimating = false; // Initially, no animation is in progress
-            // Expose a method to rotate the whole cube.
+            let isAnimating = false;
             this.rotateWholeCube = () => {
                 if (isAnimating) return;
                 isAnimating = true;
@@ -58,13 +72,12 @@
         }
     });
 
-    // Cube-controller component (unchanged)
+    // Cube-controller component
     AFRAME.registerComponent('cube-controller', {
         schema: {
             speed: { type: 'number', default: 270 } // Speed in degrees per second
         },
         init: function () {
-            // Face rotation state.
             this.faceMoveActive = false;
             this.isMoving = false;
             this.moveQueue = [];
@@ -114,11 +127,11 @@
         }
     });
 
-    // New move-manager component to enforce a 1-second delay between moves
+    // Move-manager component with 1-second delay
     AFRAME.registerComponent('move-manager', {
         init: function() {
-            this.queue = [];          // Queue of move codes
-            this.isMoving = false;    // Indicates if a move is in progress or delay is active
+            this.queue = [];
+            this.isMoving = false;
         },
         addMoveToQueue: function(moveCode) {
             this.queue.push(moveCode);
@@ -133,47 +146,17 @@
             }
             this.isMoving = true;
             const moveCode = this.queue.shift();
-
-            // Execute the move
             const face = moveCode[0].toLowerCase();
-            let angle;
-            if (moveCode.includes("2")) {
-                angle = -180;
-            } else if (moveCode.includes("'") || moveCode.includes("′")) {
-                angle = 90;
-            } else {
-                angle = -90;
-            }
+            let angle = moveCode.includes("2") ? -180 : moveCode.includes("'") || moveCode.includes("′") ? 90 : -90;
             let pivot, axis;
             switch(face) {
-                case 'f':
-                    pivot = new THREE.Vector3(0, 0, 1);
-                    axis = new THREE.Vector3(0, 0, 1);
-                    break;
-                case 'b':
-                    pivot = new THREE.Vector3(0, 0, -1);
-                    axis = new THREE.Vector3(0, 0, -1);
-                    break;
-                case 'u':
-                    pivot = new THREE.Vector3(0, 1, 0);
-                    axis = new THREE.Vector3(0, 1, 0);
-                    break;
-                case 'd':
-                    pivot = new THREE.Vector3(0, -1, 0);
-                    axis = new THREE.Vector3(0, -1, 0);
-                    break;
-                case 'l':
-                    pivot = new THREE.Vector3(-1, 0, 0);
-                    axis = new THREE.Vector3(-1, 0, 0);
-                    break;
-                case 'r':
-                    pivot = new THREE.Vector3(1, 0, 0);
-                    axis = new THREE.Vector3(1, 0, 0);
-                    break;
-                default:
-                    console.error("Unknown move code: " + moveCode);
-                    this.isMoving = false;
-                    return;
+                case 'f': pivot = new THREE.Vector3(0, 0, 1); axis = new THREE.Vector3(0, 0, 1); break;
+                case 'b': pivot = new THREE.Vector3(0, 0, -1); axis = new THREE.Vector3(0, 0, -1); break;
+                case 'u': pivot = new THREE.Vector3(0, 1, 0); axis = new THREE.Vector3(0, 1, 0); break;
+                case 'd': pivot = new THREE.Vector3(0, -1, 0); axis = new THREE.Vector3(0, -1, 0); break;
+                case 'l': pivot = new THREE.Vector3(-1, 0, 0); axis = new THREE.Vector3(-1, 0, 0); break;
+                case 'r': pivot = new THREE.Vector3(1, 0, 0); axis = new THREE.Vector3(1, 0, 0); break;
+                default: console.error("Unknown move code: " + moveCode); this.isMoving = false; return;
             }
             const tolerance = 0.1;
             this.el.querySelectorAll('.cube').forEach(cube => {
@@ -192,23 +175,49 @@
                     cube.components['cube-controller'].handleFaceRotation(pivot, axis, angle);
                 }
             });
-
-            // Enforce a 1-second delay before allowing the next move
             setTimeout(() => {
                 this.isMoving = false;
                 this.processNextMove();
-            }, 500); // 1-second delay
+            }, 1000);
         }
     });
 
-    // Updated triggerMove function to use the move-manager
+    // Trigger move function
     function triggerMove(moveCode) {
         const moveManager = document.querySelector('.RBsCube').components['move-manager'];
         moveManager.addMoveToQueue(moveCode);
     }
+
+    // File upload handler
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('move-file').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const content = e.target.result;
+                const moves = parseMoves(content);
+                const moveManager = document.querySelector('.RBsCube').components['move-manager'];
+                moves.forEach(move => moveManager.addMoveToQueue(move));
+            };
+            reader.readAsText(file);
+        });
+    });
+
+    // Parse moves from file content
+    function parseMoves(content) {
+        content = content.replace(/[\s,]+/g, '');
+        const moveRegex = /([A-Za-z]['2]?)/g;
+        const moves = content.match(moveRegex);
+        return moves || [];
+    }
 </script>
 <body style="margin: 0; overflow: hidden;">
-<!-- AR Scene with original assets and marker -->
+<!-- File input with label for move sequence -->
+<label for="move-file" id="file-label">Select Move File</label>
+<input type="file" id="move-file" accept=".txt,.json,.csv" />
+
+<!-- AR Scene -->
 <a-scene embedded arjs="sourceType: webcam;" renderer="preserveDrawingBuffer: true;">
     <a-assets>
         <img id="my-image" src="../../image.png" />
@@ -249,7 +258,6 @@
         </a-entity>
     </a-marker>
     <a-entity camera></a-entity>
-    <!-- Whole-cube controller entity remains -->
     <a-entity
             rbscube-controller
             position="2.5 -1.5 -8"
@@ -257,37 +265,30 @@
             gltf-model="url(../models/RBsCubeWorldOrigin.glb)"
     ></a-entity>
     <a-text value="Dev Mode" position="-0.5 1 -10"></a-text>
-    <a-text value="Use on-screen buttons for moves" position="-1 0.5 -10"></a-text>
+    <a-text value="Use on-screen buttons or file upload for moves" position="-1 0.5 -10"></a-text>
     <a-text value="(Hint: Hiro marker is available)" position="-1.5 0 -10"></a-text>
 </a-scene>
 
-<!-- On-screen control panel with 18 move buttons -->
+<!-- On-screen control panel with move buttons -->
 <div id="move-buttons">
-    <!-- Front face moves -->
     <button data-move="F" onclick="triggerMove(this.getAttribute('data-move'))">F</button>
     <button data-move="F'" onclick="triggerMove(this.getAttribute('data-move'))">F′</button>
     <button data-move="F2" onclick="triggerMove(this.getAttribute('data-move'))">F2</button>
-    <!-- Back face moves -->
     <button data-move="B" onclick="triggerMove(this.getAttribute('data-move'))">B</button>
     <button data-move="B'" onclick="triggerMove(this.getAttribute('data-move'))">B′</button>
     <button data-move="B2" onclick="triggerMove(this.getAttribute('data-move'))">B2</button>
-    <!-- Up face moves -->
     <button data-move="U" onclick="triggerMove(this.getAttribute('data-move'))">U</button>
     <button data-move="U'" onclick="triggerMove(this.getAttribute('data-move'))">U′</button>
     <button data-move="U2" onclick="triggerMove(this.getAttribute('data-move'))">U2</button>
-    <!-- Down face moves -->
     <button data-move="D" onclick="triggerMove(this.getAttribute('data-move'))">D</button>
     <button data-move="D'" onclick="triggerMove(this.getAttribute('data-move'))">D′</button>
     <button data-move="D2" onclick="triggerMove(this.getAttribute('data-move'))">D2</button>
-    <!-- Left face moves -->
     <button data-move="L" onclick="triggerMove(this.getAttribute('data-move'))">L</button>
     <button data-move="L'" onclick="triggerMove(this.getAttribute('data-move'))">L′</button>
     <button data-move="L2" onclick="triggerMove(this.getAttribute('data-move'))">L2</button>
-    <!-- Right face moves -->
     <button data-move="R" onclick="triggerMove(this.getAttribute('data-move'))">R</button>
     <button data-move="R'" onclick="triggerMove(this.getAttribute('data-move'))">R′</button>
     <button data-move="R2" onclick="triggerMove(this.getAttribute('data-move'))">R2</button>
 </div>
 </body>
-</html>
 </html>
