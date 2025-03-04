@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>Rubik's Cube Moves with On‑Screen Buttons</title>
     <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
-    <script src="https://cdn.rawgit.com/jeromeetienne/AR.js/master/aframe/build/aframe-ar.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.min.js"></script>
     <script>
         // Component attached to each cube piece.
         AFRAME.registerComponent('cube-controller', {
@@ -169,18 +169,49 @@
 </head>
 <body style="margin: 0; overflow: hidden;">
 <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: true;">
+    <a-assets>
+        <a-asset-item id="cube" src="/models/RBsCubeWorldOriginCube.glb"></a-asset-item>
+    </a-assets>
     <a-marker preset="hiro">
-        <a-entity>
-        <!-- Replace these asset paths as needed -->
-            position="0 0 0"
-            scale="1 1 1"
-            gltf-model="url(RBsCubeWorldOrigin.glb)">
+        <a-entity class="RBsCube" scale="0.5 0.5 0.5" position="0 0 -1.5">
+            <!-- Center pieces -->
+            <a-gltf-model src="#cube" class="cube center" position="0 0 0" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube center" position="0 -1 0" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube center" position="0 1 0" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube center" position="0 0 1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube center" position="1 0 0" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube center" position="0 0 -1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube center" position="-1 0 0" cube-controller></a-gltf-model>
+
+            <!-- Edge pieces -->
+            <a-gltf-model src="#cube" class="cube edge" position="0 1 1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube edge" position="1 1 0" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube edge" position="0 1 -1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube edge" position="-1 1 0" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube edge" position="0 -1 1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube edge" position="1 -1 0" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube edge" position="0 -1 -1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube edge" position="-1 -1 0" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube edge" position="-1 0 -1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube edge" position="1 0 -1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube edge" position="-1 0 1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube edge" position="1 0 1" cube-controller></a-gltf-model>
+
+            <!-- Corner pieces -->
+            <a-gltf-model src="#cube" class="cube corner" position="1 1 1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube corner" position="-1 1 -1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube corner" position="1 1 -1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube corner" position="-1 1 1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube corner" position="1 -1 1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube corner" position="1 -1 -1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube corner" position="-1 -1 1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube corner" position="-1 -1 -1" cube-controller></a-gltf-model>
         </a-entity>
-        <a-text value="Dev Mode" color="white" width="10" position="-1 11 0" font="https://cdn.aframe.io/fonts/DejaVu-sdf.fnt"></a-text>
     </a-marker>
-    <a-entity camera></a-entity>
+<!--    <a-entity camera></a-entity>-->
+    <a-text value="Dev Mode (hiro-marker available)" color="white" width="10" position="-4 5 -15" font="https://cdn.aframe.io/fonts/DejaVu-sdf.fnt"></a-text>
     <!-- Rubik's Cube assembly -->
-    <a-entity class="RBsCube">
+    <a-entity class="RBsCube" scale="0.3 0.3 0.3" position="3 0 -10">
         <!-- Center pieces (non-movable) -->
         <a-gltf-model src="#cube" class="cube center" position="0 0 0" cube-controller></a-gltf-model>
         <a-gltf-model src="#cube" class="cube center" position="0 -1 0" cube-controller></a-gltf-model>

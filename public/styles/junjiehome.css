@@ -18,12 +18,12 @@ html, body {
     display: flex; /* Align logo and nav items in the same line */
     align-items: center; /* Vertically center them */
     justify-content: space-between; /* Align logo to the left and nav to the right */
-    padding: 20px 20px; /* Add some padding */
+    padding: 15px 15px; /* Add some padding */
 }
 
 /* Logo styling */
 .topnav img#logo {
-    height: 50px; /* Set logo height */
+    height: 35px; /* Set logo height */
 }
 
 /* Navigation bar styling */
