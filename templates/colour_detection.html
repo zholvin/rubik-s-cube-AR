@@ -4,43 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rubik's Cube Color Detection</title>
-    
+
     <!-- Link to CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <h1>Rubik's Cube Color Detection</h1>
+<h1>Rubik's Cube Color Detection</h1>
 
-    <div class="container">
-        <div class="video-feed">
-            <img id="video-stream" src="{{ url_for('video_feed') }}" alt="Video Feed">
-        </div>
-        <div class="color-info">
-            <h2>Detected Colors</h2>
-            <p><strong>Instruction:</strong> Hold the cube with the <strong>white face up and green face front</strong>. 
-            Scan each face in this order: <strong>White → Red → Blue → Orange → Green → Yellow</strong>.</p>
-            
-            <div id="color-grid">
-                <div class="color-box" id="box-0-0"></div>
-                <div class="color-box" id="box-0-1"></div>
-                <div class="color-box" id="box-0-2"></div>
-                <div class="color-box" id="box-1-0"></div>
-                <div class="color-box" id="box-1-1"></div>
-                <div class="color-box" id="box-1-2"></div>
-                <div class="color-box" id="box-2-0"></div>
-                <div class="color-box" id="box-2-1"></div>
-                <div class="color-box" id="box-2-2"></div>
-            </div>
-
-            <!-- Buttons -->
-            <button id="captureButton">Detect Colors</button>
-            <button id="saveButton" style="display: none;">Save & Next</button>
-            <button id="resetButton">Reset Cube</button>
-
-        </div>
+<div class="container">
+    <div class="video-feed">
+        <img id="video-stream" src="{{ url_for('video_feed') }}" alt="Video Feed">
     </div>
+    <div class="color-info">
+        <h2>Detected Colors</h2>
+        <p><strong>Instruction:</strong> Hold the cube with the <strong>white face up and green face front</strong>.
+            Scan each face in this order: <strong>White → Red → Green → Yellow → Orange → Blue </strong>.</p>
 
-    <!-- JavaScript file -->
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+        <div id="color-grid">
+            <div class="color-box" id="box-0-0"></div>
+            <div class="color-box" id="box-0-1"></div>
+            <div class="color-box" id="box-0-2"></div>
+            <div class="color-box" id="box-1-0"></div>
+            <div class="color-box" id="box-1-1"></div>
+            <div class="color-box" id="box-1-2"></div>
+            <div class="color-box" id="box-2-0"></div>
+            <div class="color-box" id="box-2-1"></div>
+            <div class="color-box" id="box-2-2"></div>
+        </div>
+
+        <!-- Buttons -->
+        <button id="captureButton">Detect Colors</button>
+        <button id="saveButton" style="display: none;">Save & Next</button>
+        <button id="resetButton">Reset Cube</button>
+
+    </div>
+</div>
+
+<!-- JavaScript file -->
+<script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

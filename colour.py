@@ -7,6 +7,7 @@ import atexit
 app = Flask(__name__)
 app.secret_key = 'your_strong_secret_key_here'  # Required for sessions
 
+CURRENT_FACE_INDEX = 0
 COLOR_FILE = "cube_colors.json"
 cap = cv2.VideoCapture(0)  # Default camera
 
@@ -37,15 +38,15 @@ def adjust_brightness(img, alpha=1.3, beta=30):
 
 def get_color_from_hsv(h, s, v):
     """Maps HSV to Rubik's Cube standard colors."""
-    if s < 50 and v > 200:  
+    if s < 50 and v > 200:
         return (255, 255, 255)  # White
-    elif h < 10 or h > 170:  
+    elif h < 10 or h > 170:
         return (255, 0, 0)  # Red
-    elif 10 <= h < 30:  
+    elif 10 <= h < 30:
         return (255, 165, 0)  # Orange
-    elif 30 <= h < 90:  
+    elif 30 <= h < 90:
         return (0, 255, 0) if s > 100 else (255, 255, 0)  # Green or Yellow
-    elif 90 <= h < 150:  
+    elif 90 <= h < 150:
         return (0, 0, 255)  # Blue
     return (0, 0, 0)  # Default Black (error)
 
@@ -98,10 +99,10 @@ def load_cube_colors(file_path):
 
         face_mapping = {}
         detected_faces = {}
-    
+
         for face, colors in cube_data.items():
             center_color = COLOR_MAP.get(tuple(colors[1][1]), '?')
-            detected_faces[center_color] = face  
+            detected_faces[center_color] = face
             face_mapping[center_color] = "".join(
                 COLOR_MAP.get(tuple(color), '?') for row in colors for color in row
             )
@@ -127,6 +128,8 @@ def home():
 
 @app.route('/get_cube_colors', methods=['POST'])
 def get_cube_colors():
+    global CURRENT_FACE_INDEX
+
     try:
         if os.path.exists(COLOR_FILE):
             with open(COLOR_FILE, 'r') as file:
@@ -137,29 +140,28 @@ def get_cube_colors():
         if len(data) >= 6:
             return jsonify({'error': 'All 6 faces already scanned. Reset to start over.'}), 400
 
-        detected_colors = detect_cube_colors()
+        detected_colors = detect_cube_colors()  # Capture colors from camera
         if detected_colors is None:
-            return jsonify({'error': 'Color detection failed. Try again.'}), 500  # Return error instead of saving None
+            return jsonify({'error': 'Color detection failed. Try again.'}), 500
 
         data.append(detected_colors)
-        
+
         with open(COLOR_FILE, 'w') as file:
             json.dump(data, file, indent=4)
 
-        print("✅ Sending Detected Colors:", detected_colors)
-        return jsonify({"colors": detected_colors}), 200  # ✅ Wrap in "colors" key
+        return jsonify({"colors": detected_colors}), 200
+
     except Exception as e:
-        print("🔥 Server Error:", str(e))
         return jsonify({'error': str(e)}), 500
 
 
-CURRENT_FACE_INDEX = 0
-    
+
+
 @app.route('/reset_colors', methods=['POST'])
 def reset_colors():
     """Reset ALL faces and index."""
     global CURRENT_FACE_INDEX
-    
+
     if os.path.exists(COLOR_FILE):
         os.remove(COLOR_FILE)
     return jsonify({"message": "Reset successful"}), 200
@@ -177,25 +179,30 @@ atexit.register(cleanup)
 
 @app.route('/save_edited_colors', methods=['POST'])
 def save_edited_colors():
-    global CURRENT_FACE_INDEX  # use the global variable
-    data = request.get_json()
-    if not data or 'colors' not in data:
-        return jsonify({"error": "Invalid data format"}), 400
-    
-    # Load existing data or initialize a list for 6 faces
-    if os.path.exists(COLOR_FILE):
-        with open(COLOR_FILE, 'r') as f:
-            saved_data = json.load(f)
-    else:
-        saved_data = [None] * 6  # prepare list for 6 faces
-    
-    # Save colors for the current face index
-    saved_data[CURRENT_FACE_INDEX] = data['colors']
-    with open(COLOR_FILE, 'w') as f:
-        json.dump(saved_data, f, indent=4)
-    
-    CURRENT_FACE_INDEX += 1  # increment to next face
-    return jsonify({"message": "Face saved successfully"}), 200
+    global CURRENT_FACE_INDEX
+
+    try:
+        data = request.get_json()
+        if not data or 'colors' not in data:
+            return jsonify({"error": "Nothing detected. Please detect a face first before saving."}), 400
+
+        if os.path.exists(COLOR_FILE):
+            with open(COLOR_FILE, 'r') as f:
+                saved_data = json.load(f)
+        else:
+            saved_data = [None] * 6
+
+        saved_data[CURRENT_FACE_INDEX] = data['colors']
+
+        with open(COLOR_FILE, 'w') as f:
+            json.dump(saved_data, f, indent=4)
+
+        CURRENT_FACE_INDEX += 1
+
+        return jsonify({"message": "Face saved successfully"}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/video_feed')
 def video_feed():
@@ -217,7 +224,7 @@ def video_feed():
             frame = buffer.tobytes()
 
             yield (b'--frame\r\n'
-                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
 
     return Response(video_stream(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
