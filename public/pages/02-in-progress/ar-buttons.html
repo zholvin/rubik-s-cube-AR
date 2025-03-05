@@ -224,7 +224,7 @@
         <a-asset-item id="cube" src="/models/RBsCubeWorldOriginCube.glb"></a-asset-item>
     </a-assets>
     <a-marker preset="hiro">
-        <a-entity class="RBsCube" move-manager>
+        <a-entity class="RBsCube" move-manager scale="0.5 0.5 0.5">
             <!-- Center pieces -->
             <a-gltf-model src="#cube" class="cube center" position="0 0 0" cube-controller></a-gltf-model>
             <a-gltf-model src="#cube" class="cube center" position="0 -1 0" cube-controller></a-gltf-model>
@@ -258,12 +258,6 @@
         </a-entity>
     </a-marker>
     <a-entity camera></a-entity>
-    <a-entity
-            rbscube-controller
-            position="2.5 -1.5 -8"
-            scale="0.3 0.3 0.3"
-            gltf-model="url(../models/RBsCubeWorldOrigin.glb)"
-    ></a-entity>
     <a-text value="Dev Mode" position="-0.5 1 -10"></a-text>
     <a-text value="Use on-screen buttons or file upload for moves" position="-1 0.5 -10"></a-text>
     <a-text value="(Hint: Hiro marker is available)" position="-1.5 0 -10"></a-text>

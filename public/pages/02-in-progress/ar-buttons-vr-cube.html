@@ -173,7 +173,7 @@
         <a-asset-item id="cube" src="/models/RBsCubeWorldOriginCube.glb"></a-asset-item>
     </a-assets>
     <a-marker preset="hiro">
-        <a-entity class="RBsCube" scale="0.5 0.5 0.5" position="0 0 -1.5">
+        <a-entity class="RBsCube" scale="0.5 0.5 0.5" position="0 0 0">
             <!-- Center pieces -->
             <a-gltf-model src="#cube" class="cube center" position="0 0 0" cube-controller></a-gltf-model>
             <a-gltf-model src="#cube" class="cube center" position="0 -1 0" cube-controller></a-gltf-model>
@@ -208,10 +208,10 @@
             <a-gltf-model src="#cube" class="cube corner" position="-1 -1 -1" cube-controller></a-gltf-model>
         </a-entity>
     </a-marker>
-<!--    <a-entity camera></a-entity>-->
+    <a-entity camera></a-entity>
     <a-text value="Dev Mode (hiro-marker available)" color="white" width="10" position="-4 5 -15" font="https://cdn.aframe.io/fonts/DejaVu-sdf.fnt"></a-text>
     <!-- Rubik's Cube assembly -->
-    <a-entity class="RBsCube" scale="0.3 0.3 0.3" position="3 0 -10">
+    <a-entity class="RBsCube" scale="0.3 0.3 0.3" position="2 -2 -10">
         <!-- Center pieces (non-movable) -->
         <a-gltf-model src="#cube" class="cube center" position="0 0 0" cube-controller></a-gltf-model>
         <a-gltf-model src="#cube" class="cube center" position="0 -1 0" cube-controller></a-gltf-model>

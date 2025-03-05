@@ -11,6 +11,7 @@ html, body {
     background: linear-gradient(227deg, #81bee4 25%, #165b9c 95%);
     padding-bottom: clamp(30px,10vh,500px);
     margin: 3px;
+    height: 100%;
 }
 
 /* Top navigation bar with flex layout */
