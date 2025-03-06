@@ -3,9 +3,38 @@
 <head>
     <meta charset="utf-8" />
     <title>Rubik's Cube AR</title>
-    <link rel="stylesheet" href="style/index.css" />
     <style>
-        /* Control panel styling for on-screen move buttons */
+        /* File upload button styling */
+        #file-label {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #move-file {
+            display: none;
+        }
+        /* Next and Previous buttons styling */
+        #next-button, #previous-button {
+            position: absolute;
+            top: 50px;
+            z-index: 1000;
+            padding: 5px 10px;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #next-button {
+            left: 10px;
+        }
+        #previous-button {
+            left: 100px;
+        }
+        /* Move buttons styling */
         #move-buttons {
             position: absolute;
             bottom: 10px;
@@ -24,59 +53,16 @@
             padding: 8px 12px;
             font-size: 14px;
         }
-        /* Styling for the file upload label */
-        #file-label {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            z-index: 1000;
-            background: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        /* Hide the actual file input */
-        #move-file {
-            display: none;
-        }
     </style>
 </head>
+<body style="margin: 0; overflow: hidden;">
 <!-- Include A-Frame and AR.js libraries -->
 <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js/aframe/build/aframe-ar.min.js"></script>
 <script>
-    // Whole-cube controller
-    AFRAME.registerComponent('rbscube-controller', {
-        init: function () {
-            let isAnimating = false;
-            this.rotateWholeCube = () => {
-                if (isAnimating) return;
-                isAnimating = true;
-                const rotation = this.el.getAttribute('rotation');
-                const startY = rotation.y;
-                const targetY = startY + 90;
-                const step = 5;
-                const interval = 10;
-                let currentY = startY;
-                let rotateInterval = setInterval(() => {
-                    if (currentY < targetY) {
-                        currentY += step;
-                        this.el.setAttribute('rotation', { x: rotation.x, y: currentY, z: rotation.z });
-                    } else {
-                        clearInterval(rotateInterval);
-                        isAnimating = false;
-                    }
-                }, interval);
-                console.log('Whole cube rotated');
-            };
-        }
-    });
-
-    // Cube-controller component
+    // Cube-controller component (handles individual cube animations)
     AFRAME.registerComponent('cube-controller', {
-        schema: {
-            speed: { type: 'number', default: 270 } // Speed in degrees per second
-        },
+        schema: { speed: { type: 'number', default: 270 } }, // Speed in degrees per second
         init: function () {
             this.faceMoveActive = false;
             this.isMoving = false;
@@ -88,7 +74,7 @@
         },
         handleFaceRotation: function(pivot, axis, angle) {
             if (this.isMoving) {
-                this.moveQueue.push({ pivot: pivot.clone(), axis: axis.clone(), angle: angle });
+                this.moveQueue.push({ pivot: pivot.clone(), axis: axis.clone(), angle });
                 return;
             }
             this.startFaceRotation(pivot, axis, angle);
@@ -119,6 +105,7 @@
             if (Math.abs(this.remainingAngle) < 0.001) {
                 this.faceMoveActive = false;
                 this.isMoving = false;
+                this.el.emit('animation-complete');
                 if (this.moveQueue.length > 0) {
                     const nextMove = this.moveQueue.shift();
                     this.startFaceRotation(nextMove.pivot, nextMove.axis, nextMove.angle);
@@ -127,27 +114,12 @@
         }
     });
 
-    // Move-manager component with 1-second delay
+    // Move-manager component (executes a single move)
     AFRAME.registerComponent('move-manager', {
-        init: function() {
-            this.queue = [];
-            this.isMoving = false;
-        },
-        addMoveToQueue: function(moveCode) {
-            this.queue.push(moveCode);
-            if (!this.isMoving) {
-                this.processNextMove();
-            }
-        },
-        processNextMove: function() {
-            if (this.queue.length === 0) {
-                this.isMoving = false;
-                return;
-            }
-            this.isMoving = true;
-            const moveCode = this.queue.shift();
+        init: function() {},
+        executeMove: function(moveCode, callback) {
             const face = moveCode[0].toLowerCase();
-            let angle = moveCode.includes("2") ? -180 : moveCode.includes("'") || moveCode.includes("′") ? 90 : -90;
+            let angle = moveCode.includes("2") ? -180 : moveCode.includes("'") ? 90 : -90;
             let pivot, axis;
             switch(face) {
                 case 'f': pivot = new THREE.Vector3(0, 0, 1); axis = new THREE.Vector3(0, 0, 1); break;
@@ -156,9 +128,10 @@
                 case 'd': pivot = new THREE.Vector3(0, -1, 0); axis = new THREE.Vector3(0, -1, 0); break;
                 case 'l': pivot = new THREE.Vector3(-1, 0, 0); axis = new THREE.Vector3(-1, 0, 0); break;
                 case 'r': pivot = new THREE.Vector3(1, 0, 0); axis = new THREE.Vector3(1, 0, 0); break;
-                default: console.error("Unknown move code: " + moveCode); this.isMoving = false; return;
+                default: console.error("Unknown move code: " + moveCode); return;
             }
             const tolerance = 0.1;
+            const affectedCubes = [];
             this.el.querySelectorAll('.cube').forEach(cube => {
                 if (!cube.components || !cube.components['cube-controller']) return;
                 const pos = cube.object3D.position;
@@ -172,98 +145,110 @@
                     case 'r': belongs = Math.abs(pos.x - 1) < tolerance; break;
                 }
                 if (belongs) {
+                    affectedCubes.push(cube);
                     cube.components['cube-controller'].handleFaceRotation(pivot, axis, angle);
                 }
             });
-            setTimeout(() => {
-                this.isMoving = false;
-                this.processNextMove();
-            }, 1000);
+            let completed = 0;
+            const onAnimationComplete = () => {
+                completed++;
+                if (completed === affectedCubes.length) callback();
+            };
+            affectedCubes.forEach(cube => {
+                cube.addEventListener('animation-complete', onAnimationComplete, {once: true});
+            });
         }
     });
 
-    // Trigger move function
-    function triggerMove(moveCode) {
-        const moveManager = document.querySelector('.RBsCube').components['move-manager'];
-        moveManager.addMoveToQueue(moveCode);
+    // Global variables for move sequence
+    let remainingMoves = [];
+    let executedMoves = [];
+    let isAnimating = false;
+
+    // Function to get the inverse of a move
+    function getInverseMove(move) {
+        if (move.endsWith("2")) return move;
+        else if (move.endsWith("'")) return move.slice(0, -1);
+        else return move + "'";
     }
 
-    // File upload handler
+    // Function to enable/disable all buttons
+    function setButtonsEnabled(enabled) {
+        document.getElementById('next-button').disabled = !enabled;
+        document.getElementById('previous-button').disabled = !enabled;
+        document.querySelectorAll('#move-buttons button').forEach(button => {
+            button.disabled = !enabled;
+        });
+    }
+
+    // Function to trigger a manual move
+    function triggerMove(moveCode) {
+        if (isAnimating) return;
+        isAnimating = true;
+        setButtonsEnabled(false);
+        const moveManager = document.querySelector('.RBsCube').components['move-manager'];
+        moveManager.executeMove(moveCode, () => {
+            isAnimating = false;
+            setButtonsEnabled(true);
+        });
+    }
+
+    // Event handlers
     document.addEventListener('DOMContentLoaded', function() {
+        // Next button
+        document.getElementById('next-button').addEventListener('click', () => {
+            if (isAnimating || remainingMoves.length === 0) return;
+            isAnimating = true;
+            setButtonsEnabled(false);
+            const move = remainingMoves.shift();
+            executedMoves.push(move);
+            const moveManager = document.querySelector('.RBsCube').components['move-manager'];
+            moveManager.executeMove(move, () => {
+                isAnimating = false;
+                setButtonsEnabled(true);
+            });
+        });
+
+        // Previous button
+        document.getElementById('previous-button').addEventListener('click', () => {
+            if (isAnimating || executedMoves.length === 0) return;
+            isAnimating = true;
+            setButtonsEnabled(false);
+            const lastMove = executedMoves.pop();
+            const inverseMove = getInverseMove(lastMove);
+            const moveManager = document.querySelector('.RBsCube').components['move-manager'];
+            moveManager.executeMove(inverseMove, () => {
+                isAnimating = false;
+                setButtonsEnabled(true);
+            });
+            remainingMoves.unshift(lastMove);
+        });
+
+        // File upload
         document.getElementById('move-file').addEventListener('change', function(event) {
             const file = event.target.files[0];
             if (!file) return;
             const reader = new FileReader();
             reader.onload = function(e) {
                 const content = e.target.result;
-                const moves = parseMoves(content);
-                const moveManager = document.querySelector('.RBsCube').components['move-manager'];
-                moves.forEach(move => moveManager.addMoveToQueue(move));
+                remainingMoves = content.replace(/[\s,]+/g, '').match(/([A-Za-z]['2]?)/g) || [];
+                executedMoves = [];
+                setButtonsEnabled(true);
             };
             reader.readAsText(file);
         });
     });
-
-    // Parse moves from file content
-    function parseMoves(content) {
-        content = content.replace(/[\s,]+/g, '');
-        const moveRegex = /([A-Za-z]['2]?)/g;
-        const moves = content.match(moveRegex);
-        return moves || [];
-    }
 </script>
-<body style="margin: 0; overflow: hidden;">
-<!-- File input with label for move sequence -->
+
+<!-- File input -->
 <label for="move-file" id="file-label">Select Move File</label>
 <input type="file" id="move-file" accept=".txt,.json,.csv" />
 
-<!-- AR Scene -->
-<a-scene embedded arjs="sourceType: webcam;" renderer="preserveDrawingBuffer: true;">
-    <a-assets>
-        <img id="my-image" src="../../image.png" />
-        <a-asset-item id="cube" src="/models/RBsCubeWorldOriginCube.glb"></a-asset-item>
-    </a-assets>
-    <a-marker preset="hiro">
-        <a-entity class="RBsCube" move-manager scale="0.5 0.5 0.5">
-            <!-- Center pieces -->
-            <a-gltf-model src="#cube" class="cube center" position="0 0 0" cube-controller></a-gltf-model>
-            <a-gltf-model src="#cube" class="cube center" position="0 -1 0" cube-controller></a-gltf-model>
-            <a-gltf-model src="#cube" class="cube center" position="0 1 0" cube-controller></a-gltf-model>
-            <a-gltf-model src="#cube" class="cube center" position="0 0 1" cube-controller></a-gltf-model>
-            <a-gltf-model src="#cube" class="cube center" position="1 0 0" cube-controller></a-gltf-model>
-            <a-gltf-model src="#cube" class="cube center" position="0 0 -1" cube-controller></a-gltf-model>
-            <a-gltf-model src="#cube" class="cube center" position="-1 0 0" cube-controller></a-gltf-model>
-            <!-- Edge pieces -->
-            <a-gltf-model src="#cube" class="cube edge" position="0 1 1" cube-controller></a-gltf-model>
-            <a-gltf-model src="#cube" class="cube edge" position="1 1 0" cube-controller></a-gltf-model>
-            <a-gltf-model src="#cube" class="cube edge" position="0 1 -1" cube-controller></a-gltf-model>
-            <a-gltf-model src="#cube" class="cube edge" position="-1 1 0" cube-controller></a-gltf-model>
-            <a-gltf-model src="#cube" class="cube edge" position="0 -1 1" cube-controller></a-gltf-model>
-            <a-gltf-model src="#cube" class="cube edge" position="1 -1 0" cube-controller></a-gltf-model>
-            <a-gltf-model src="#cube" class="cube edge" position="0 -1 -1" cube-controller></a-gltf-model>
-            <a-gltf-model src="#cube" class="cube edge" position="-1 -1 0" cube-controller></a-gltf-model>
-            <a-gltf-model src="#cube" class="cube edge" position="-1 0 -1" cube-controller></a-gltf-model>
-            <a-gltf-model src="#cube" class="cube edge" position="1 0 -1" cube-controller></a-gltf-model>
-            <a-gltf-model src="#cube" class="cube edge" position="-1 0 1" cube-controller></a-gltf-model>
-            <a-gltf-model src="#cube" class="cube edge" position="1 0 1" cube-controller></a-gltf-model>
-            <!-- Corner pieces -->
-            <a-gltf-model src="#cube" class="cube corner" position="1 1 1" cube-controller></a-gltf-model>
-            <a-gltf-model src="#cube" class="cube corner" position="-1 1 -1" cube-controller></a-gltf-model>
-            <a-gltf-model src="#cube" class="cube corner" position="1 1 -1" cube-controller></a-gltf-model>
-            <a-gltf-model src="#cube" class="cube corner" position="-1 1 1" cube-controller></a-gltf-model>
-            <a-gltf-model src="#cube" class="cube corner" position="1 -1 1" cube-controller></a-gltf-model>
-            <a-gltf-model src="#cube" class="cube corner" position="1 -1 -1" cube-controller></a-gltf-model>
-            <a-gltf-model src="#cube" class="cube corner" position="-1 -1 1" cube-controller></a-gltf-model>
-            <a-gltf-model src="#cube" class="cube corner" position="-1 -1 -1" cube-controller></a-gltf-model>
-        </a-entity>
-    </a-marker>
-    <a-entity camera></a-entity>
-    <a-text value="Dev Mode" position="-0.5 1 -10"></a-text>
-    <a-text value="Use on-screen buttons or file upload for moves" position="-1 0.5 -10"></a-text>
-    <a-text value="(Hint: Hiro marker is available)" position="-1.5 0 -10"></a-text>
-</a-scene>
+<!-- Next and Previous buttons -->
+<button id="next-button">Next</button>
+<button id="previous-button">Previous</button>
 
-<!-- On-screen control panel with move buttons -->
+<!-- 18 Move buttons -->
 <div id="move-buttons">
     <button data-move="F" onclick="triggerMove(this.getAttribute('data-move'))">F</button>
     <button data-move="F'" onclick="triggerMove(this.getAttribute('data-move'))">F′</button>
@@ -284,5 +269,48 @@
     <button data-move="R'" onclick="triggerMove(this.getAttribute('data-move'))">R′</button>
     <button data-move="R2" onclick="triggerMove(this.getAttribute('data-move'))">R2</button>
 </div>
+
+<!-- AR Scene -->
+<a-scene embedded arjs="sourceType: webcam;">
+    <a-assets>
+        <a-asset-item id="cube" src="/models/RBsCubeWorldOriginCube.glb"></a-asset-item>
+    </a-assets>
+    <a-marker preset="hiro">
+        <a-entity class="RBsCube" move-manager>
+            <!-- Full 3x3x3 Rubik's Cube setup -->
+            <!-- Centers -->
+            <a-gltf-model src="#cube" class="cube center" position="0 0 0" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube center" position="0 -1 0" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube center" position="0 1 0" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube center" position="0 0 1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube center" position="1 0 0" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube center" position="0 0 -1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube center" position="-1 0 0" cube-controller></a-gltf-model>
+            <!-- Edges -->
+            <a-gltf-model src="#cube" class="cube edge" position="0 1 1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube edge" position="1 1 0" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube edge" position="0 1 -1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube edge" position="-1 1 0" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube edge" position="0 -1 1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube edge" position="1 -1 0" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube edge" position="0 -1 -1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube edge" position="-1 -1 0" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube edge" position="-1 0 -1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube edge" position="1 0 -1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube edge" position="-1 0 1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube edge" position="1 0 1" cube-controller></a-gltf-model>
+            <!-- Corners -->
+            <a-gltf-model src="#cube" class="cube corner" position="1 1 1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube corner" position="-1 1 -1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube corner" position="1 1 -1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube corner" position="-1 1 1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube corner" position="1 -1 1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube corner" position="1 -1 -1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube corner" position="-1 -1 1" cube-controller></a-gltf-model>
+            <a-gltf-model src="#cube" class="cube corner" position="-1 -1 -1" cube-controller></a-gltf-model>
+        </a-entity>
+    </a-marker>
+    <a-entity camera></a-entity>
+</a-scene>
 </body>
 </html>
