@@ -89,9 +89,26 @@ if (cubeConfig.length === 54 && /^([URFDLB])*$/.test(cubeConfig)) {
         const cube = Cube.fromString(cubeConfig);
         const solution = cube.solve();
         console.log("✅ Solution:", solution);
-// ✅ Write solution to a text file
+
+// ✅ Save the solution
         fs.writeFileSync('cube_solution.txt', solution, 'utf-8');
         console.log("✅ Solution saved to cube_solution.txt");
+
+// ✅ Reverse the solution to get the scramble moves
+        function reverseSolution(solution) {
+            return solution.split(' ').reverse().map(move => {
+                if (move.includes("'")) return move.replace("'", "");  // U' → U
+                if (move.includes("2")) return move;  // U2 stays U2
+                return move + "'";  // U → U'
+            }).join(' ');
+        }
+
+        const scrambleMoves = reverseSolution(solution);
+        console.log("✅ Scramble Moves:", scrambleMoves);
+
+// ✅ Save the scramble moves
+        fs.writeFileSync('cube_scramble.txt', scrambleMoves, 'utf-8');
+        console.log("✅ Scramble moves saved to cube_scramble.txt");
 
     } catch (error) {
         console.error("❌ Error solving the cube:", error);
