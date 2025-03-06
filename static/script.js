@@ -86,9 +86,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
             currentFaceIndex++;
             if (currentFaceIndex >= 6) {
-                alert("All 6 faces saved! Reset to start over.");
+                alert("All 6 faces saved! Click 'Proceed' to solve or 'Reset' to start over.");
                 saveButton.style.display = "none";
                 captureButton.style.display = "none";
+                resetButton.style.display = "inline-block";
+                document.getElementById("proceedButton").style.display = "inline-block"; // 显示新按钮
+                
             } else {
                 alert(`Face ${currentFaceIndex}/6 saved. Detect face ${currentFaceIndex + 1}.`);
                 saveButton.style.display = "none";
@@ -99,6 +102,22 @@ document.addEventListener("DOMContentLoaded", function () {
             console.log("Save error:", error);
             alert("Save failed. Check console.");
         }
+    });
+
+// Proceed Button
+    document.getElementById("proceedButton").addEventListener("click", function () {
+        fetch('/turnoff', { method: "POST" })
+            .then(response => {
+                if (!response.ok) throw new Error("Reset failed");
+                turnoffcam();
+            })
+                .catch(error => {
+                    console.error("Reset error:", error);
+                    alert("Reset failed. Check console.");
+                });
+
+        window.location.href = "http://localhost:8080/pages/02-in-progress/ar-buttons.html";
+
     });
 
     // Reset - Restart from Face 1

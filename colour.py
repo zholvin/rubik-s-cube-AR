@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template, Response, send_from_directory
+from flask import Flask, request, redirect, jsonify, render_template, Response, send_from_directory
 import cv2
 import json
 import os
@@ -152,7 +152,9 @@ def save_edited_colors():
             saved_data = [None] * 6
 
         if CURRENT_FACE_INDEX >= 6:
+        
             return jsonify({"error": "All faces already saved."}), 400
+        
 
         # Save the edited colors at the current index
         saved_data[CURRENT_FACE_INDEX] = data['colors']
@@ -161,7 +163,7 @@ def save_edited_colors():
             json.dump(saved_data, f, indent=4)
 
         CURRENT_FACE_INDEX += 1
-
+        
         return jsonify({"message": "Face saved successfully"}), 200
 
     except Exception as e:
@@ -175,6 +177,12 @@ def reset_colors():
     if os.path.exists(COLOR_FILE):
         os.remove(COLOR_FILE)
     return jsonify({"message": "Reset successful"}), 200
+
+@app.route('/turnoff', methods=['POST'])
+def turnoffcam():
+
+    if cap.isOpened():
+        cap.release()
 
 def cleanup():
     """Cleans up resources before shutdown."""
