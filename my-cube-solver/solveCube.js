@@ -1,46 +1,118 @@
 const fs = require('fs');
 const Cube = require('cubejs');
 
-// Initialize the solver
+// ✅ Initialize the solver
 Cube.initSolver();
 
-// Function to map RGB values to cube face labels
+// ✅ Function to map RGB values to cube face labels
 function rgbToFace(rgb) {
     const [r, g, b] = rgb;
-    if (r > 200 && g > 200 && b > 200) return 'U';  // Assume white is Up
-    if (r < 50 && g < 50 && b > 200) return 'R';    // Assume blue is Right
-    if (r > 200 && g > 100 && g < 180 && b < 50) return 'L'; // Assume orange is Left
-    if (r < 50 && g > 200 && b < 50) return 'F';    // Assume green is Front
-    if (r > 200 && g < 50 && b < 50) return 'B';    // Assume red is Back
-    if (r > 200 && g > 200 && b < 50) return 'D';   // Assume yellow is Down
+    if (r > 200 && g > 200 && b > 200) return 'U';  // White (Up)
+    if (r > 200 && g < 50 && b < 50) return 'R';    // Red (Right)
+    if (r < 50 && g > 200 && b < 50) return 'F';    // Green (Front)
+    if (r > 200 && g > 200 && b < 50) return 'D';   // Yellow (Down)
+    if (r > 200 && g > 100 && g < 180 && b < 50) return 'L'; // Orange (Left)
+    if (r < 50 && g < 50 && b > 200) return 'B';    // Blue (Back)
     return 'X';  // Unknown or invalid color
 }
 
-// Read the JSON file and convert it to the cube configuration
+// ✅ Function to convert JSON cube colors to cube.js format
 function convertToJsonConfig(filename) {
-    const data = JSON.parse(fs.readFileSync(filename, 'utf-8'));
-    let cubeConfig = '';
+    try {
+        const data = JSON.parse(fs.readFileSync(filename, 'utf-8'));
 
-    // Assuming data is structured as an object of faces, each containing a 3x3 array of RGB values
-    for (const face of Object.values(data)) {
-        for (const row of face) {
-            for (const color of row) {
-                cubeConfig += rgbToFace(color);
+        let cubeConfig = '';
+        const faceOrder = ['U', 'R', 'F', 'D', 'L', 'B']; // Standard Rubik's order
+        const faceConfig = { U: [], R: [], F: [], D: [], L: [], B: [] };
+
+        // ✅ Check if JSON structure is correct
+        if (!Array.isArray(data) || data.length !== 6) {
+            console.error("❌ Error: JSON must contain 6 faces (arrays).");
+            return null;
+        }
+
+        // ✅ Loop through each face (0-5) and assign to face labels (U, R, F, etc.)
+        for (let i = 0; i < 6; i++) {
+            const faceKey = faceOrder[i];
+
+            if (!Array.isArray(data[i]) || data[i].length !== 3) {
+                console.error(`❌ Error: Face ${faceKey} is missing or invalid.`);
+                return null;
+            }
+
+            for (let row = 0; row < 3; row++) {
+                if (!Array.isArray(data[i][row]) || data[i][row].length !== 3) {
+                    console.error(`❌ Error: Face ${faceKey}, row ${row} is invalid.`);
+                    return null;
+                }
+
+                for (let col = 0; col < 3; col++) {
+                    const rgb = data[i][row][col];
+
+                    if (!Array.isArray(rgb) || rgb.length !== 3) {
+                        console.error(`❌ Error: Face ${faceKey}, row ${row}, col ${col} has invalid RGB.`);
+                        return null;
+                    }
+
+                    faceConfig[faceKey].push(rgbToFace(rgb));  // ✅ Convert RGB to cube notation
+                }
             }
         }
+
+        // ✅ Concatenate faces in the correct order
+        for (const face of faceOrder) {
+            cubeConfig += faceConfig[face].join('');
+        }
+
+        return cubeConfig;
+    } catch (error) {
+        console.error("❌ Error reading JSON file:", error);
+        return null;
     }
-    return cubeConfig;
 }
 
-// Filepath to your JSON file
-const filePath = 'cube_colors.json'; // Change this to your actual file path
-const cubeConfig = convertToJsonConfig(filePath);
 
-// Check if configuration is valid (54 characters and each face is correctly counted)
+// ✅ Read JSON and convert to cube notation
+const filePath = 'cube_colors.json'; // Make sure the file exists
+const cubeConfig = convertToJsonConfig(filePath);
+console.log("🔹 Cube String for Solver:", cubeConfig); // ✅ Debugging Output
+
+
+if (!cubeConfig) {
+    console.error("❌ Error: Failed to generate a valid cube configuration.");
+    process.exit(1);
+}
+
+// ✅ Validate cube format (54 characters, valid faces)
 if (cubeConfig.length === 54 && /^([URFDLB])*$/.test(cubeConfig)) {
-    const cube = Cube.fromString(cubeConfig);
-    const solution = cube.solve();
-    console.log("Solution:", solution);
+    try {
+        const cube = Cube.fromString(cubeConfig);
+        const solution = cube.solve();
+        console.log("✅ Solution:", solution);
+
+// ✅ Save the solution
+        fs.writeFileSync('cube_solution.txt', solution, 'utf-8');
+        console.log("✅ Solution saved to cube_solution.txt");
+
+// ✅ Reverse the solution to get the scramble moves
+        function reverseSolution(solution) {
+            return solution.split(' ').reverse().map(move => {
+                if (move.includes("'")) return move.replace("'", "");  // U' → U
+                if (move.includes("2")) return move;  // U2 stays U2
+                return move + "'";  // U → U'
+            }).join(' ');
+        }
+
+        const scrambleMoves = reverseSolution(solution);
+        console.log("✅ Scramble Moves:", scrambleMoves);
+
+// ✅ Save the scramble moves
+        fs.writeFileSync('cube_scramble.txt', scrambleMoves, 'utf-8');
+        console.log("✅ Scramble moves saved to cube_scramble.txt");
+
+    } catch (error) {
+        console.error("❌ Error solving the cube:", error);
+    }
 } else {
-    console.log("Invalid cube configuration:", cubeConfig);
+    console.error("❌ Invalid cube configuration:", cubeConfig);
 }
