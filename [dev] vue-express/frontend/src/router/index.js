@@ -6,7 +6,7 @@ import aframeTemplate from '../views/02-in-progress/aframe-template.vue'
 
 const routes = [
   {
-    path: '/', // 首页路径
+    path: '/junjiehome', // 首页路径
     name: 'home',
     component: junjiehome, // 首页组件
   },

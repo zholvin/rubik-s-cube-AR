@@ -8,6 +8,6 @@ app.use(express.urlencoded({ extended: false }));
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public/pages/01-homepage/Darraghsindex.html'));
 });
-app.listen(8080, () => {
-    console.log("Listening on http://localhost:8080");
+app.listen(5050, () => {
+    console.log("Listening on http://localhost:5050");
 });
