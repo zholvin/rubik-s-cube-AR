@@ -2,12 +2,12 @@
     "name": "ARjs",
     "version": "1.0.0",
     "description": "",
-    "main": "server.js",
+    "main": "frontend/server.js",
     "directories": {
         "test": "test"
     },
     "scripts": {
-        "start": "node server.js",
+        "start": "node frontend/server.js",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
     "keywords": [],

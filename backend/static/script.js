@@ -116,7 +116,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     alert("Reset failed. Check console.");
                 });
 
-        window.location.href = "http://localhost:8080/pages/02-in-progress/ar-buttons.html";
+        window.location.href = "http://localhost:5050/pages/02-in-progress/ar-buttons.html";
 
     });
 
