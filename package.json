@@ -2,6 +2,9 @@
   "name": "rubik-s-cube-AR",
   "version": "1.0.0",
   "scripts": {
+    "install:frontend": "cd frontend && npm install",
+    "install:backend": "cd backend && npm install",
+    "install": "concurrently \"npm:install:frontend\" \"npm:install:backend\"",
     "start:frontend": "cd frontend && npm run dev",
     "start:backend": "cd backend && npm start",
     "start:colour": "cd colour-detection-cube-solver && python3 colour.py",
