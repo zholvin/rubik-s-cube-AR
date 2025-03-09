@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "aframe": "^1.7.0",
-    "vue-router": "^4.5.0"
-  }
-}

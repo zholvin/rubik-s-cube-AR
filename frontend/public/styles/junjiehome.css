@@ -1,51 +1,69 @@
-/*!* Set full height and remove right margin, set background to black *!*/
 html, body {
     height: 100%;
     background: black;
     margin: 0;
 }
 
-/* Home frame with gradient background and padding */
 #home-frame {
     border-radius: 25px;
     background: linear-gradient(227deg, #81bee4 25%, #165b9c 95%);
     padding-bottom: clamp(30px,10vh,500px);
     margin: 3px;
-    height: 100%;
 }
 
-/* Top navigation bar with flex layout */
 .topnav {
-    display: flex; /* Align logo and nav items in the same line */
-    align-items: center; /* Vertically center them */
-    justify-content: space-between; /* Align logo to the left and nav to the right */
-    padding: 15px 15px; /* Add some padding */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 25px 30px;
 }
 
-/* Logo styling */
 .topnav img#logo {
-    height: 35px; /* Set logo height */
+    height: 50px;
 }
 
-/* Navigation bar styling */
 .topnav nav {
-    display: flex; /* Display links in a row */
-    flex-wrap: wrap; /* Allow links to wrap in small screens */
+    display: flex;
+    flex-wrap: wrap;
 }
 
-/* Style navigation links */
 .topnav nav a {
     text-decoration: none;
-    padding: 5px 10px; /* Add padding for clickable links */
+    padding: 5px 10px;
     color: black;
-    font-size: clamp(20px, 1vw, 48px);
+    font-size: clamp(15px, 2vw, 48px);
     font-style: normal;
     font-family: 'Raleway', sans-serif;
     font-weight: 600;
     line-height: normal;
 }
+@media (max-width: 768px) {
+    .topnav {
+        flex-direction: column;
+        align-items: center;
+        padding: 15px 20px;
+    }
 
-/* Make main a flex container */
+    .topnav img#logo {
+        height: 40px;
+    }
+
+    .topnav nav {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        align-items: center;
+        text-align: center;
+    }
+
+    .topnav nav a {
+        padding: 10px 0;
+        font-size: clamp(15px, 4vw, 30px);
+        width: 100%;
+        text-align: center;
+    }
+}
+
 .main {
     display: flex;
     align-items: center;
@@ -56,81 +74,73 @@ html, body {
     width: 95%;
     margin: 0 auto;
     box-sizing: border-box;
-
-    /* 新增响应式限制 */
-    @media (min-width: 1000px) {
-        max-width: 1300px;
-        width: 100%;
-    }
 }
 
-/* Image styling on the left */
 #home-img {
-    width: clamp(250px, 30vw, 50vw);  /* Control the image width */
-    height: auto;  /* Maintain image aspect ratio */
+    width: clamp(250px, 30vw, 50vw);
+    height: auto;
     margin-top: 4vh;
     margin-bottom: 4vh;
-    margin-inline: 2vw;  /* Set left and right margins */
-    /* 新增响应式限制 */
-    @media (min-width: 300px) {
-        max-width: 300px;
-        width: 100%;
-    }
+    margin-inline: 2vw;
 }
 
-/* Styling for the content area */
 #home-content {
-    flex: 1;  /* Content area takes up remaining space */
-    text-align: center;  /* Center-align text */
+    flex: 1;
+    text-align: center;
     border-radius: 27px;
     background-color: skyblue;
     padding-top: 3vh;
     padding-bottom: 3vh;
     padding-left: 1%;
     padding-right: 1%;
-    box-sizing: border-box;  /* Include padding in width/height calculations */
-    margin-inline: 2vh;  /* Set left and right margins */
-    margin-top: clamp(2vh, 1vh, 10%); /*解释：clamp(最小值, 希望值, 最大值) */
+    box-sizing: border-box;
+    margin-inline: 2vh;
+    margin-top: clamp(2vh, 1vh, 10%);
     margin-bottom: clamp(2vh, 1vh, 10%);
-    min-width: 280px; /* 新增 */
 }
 
-/* Beautify heading in content */
 #home-content h1 {
-    margin-bottom: 10px;
-    font-size: clamp(30px, 4vw, 100px);  /* Adjust font size */
+    font-size: clamp(45px, 5vw, 100px);  /* Adjust font size */
     font-family: "Gochi Hand", cursive;
-    margin-bottom: 1vh;
+    margin-bottom: 1vh;    @media (max-width: 450px) {
+        font-size: clamp(32px, 9vw, 48px);
+    }
 }
+
 
 #home-content h2 {
     color: #332623;
     text-align: center;
     font-family: "Baloo 2";
-    font-size: clamp(20px, 2vw, 40px);
+    font-size: clamp(20px, 3vw, 40px);
     font-style: normal;
     font-weight: 600;
     line-height: 140%;
+    @media (max-width: 450px) {
+        font-size: clamp(18px, 5vw, 28px);
+    }
 }
 
-/* Paragraph styling */
 #home-content p {
     color: #332623;
     text-align: center;
     font-family: "Baloo 2";
-    font-size: clamp(10px, 1vw, 20px);
+    font-size: clamp(10px, 2vw, 20px);
     font-style: normal;
     font-weight: 600;
     line-height: 140%;
-    width: 80%;  /* Set paragraph width */
-    margin: 0 auto;  /* Horizontally center the paragraph */
+    width: 80%;
+    margin: 0 auto;
     margin-bottom: 5vh;
+    @media (max-width: 450px) {
+        font-size: clamp(14px, 4vw, 18px);
+        line-height: 1.6;
+    }
 }
 
-/* Styling for the call-to-action button */
 #home-content a {
     font-family: "Baloo 2";
-    /*font-size: clamp(12px, 3vw, 25px);*/
+    font-size: clamp(12px, 3vw, 25px);
     text-decoration: none;
     background-color: #4CAF50;
     color: white;
@@ -138,22 +148,65 @@ html, body {
     display: flex;
     align-items: center;
     justify-content: center;
-    margin: 1% auto;  /* 让块级元素居中 */
-    width: min(90%, clamp(250px, 30vw, 300px));
-    box-sizing: border-box;
-    padding: 10px 5px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-
-    @media (max-width: 768px) {
-        #home-content a {
-            width: min(90%, 280px);
-            font-size: clamp(12px, 4vw, 18px);
-        }
+    margin: 1% auto;
+    width: clamp(250px, 30vw, 300px);
+    padding: 10px 20px;
+    @media (max-width: 450px) {
+        font-size: clamp(16px, 4.5vw, 22px);
+        padding: 12px 24px;
+    }
 }
 
-/* Button hover effect */
 #home-content a:hover {
     background-color: #4b734e;
-}}
+}
+
+/* 新增：通用移动端适配 */
+@media (max-width: 800px) { /* 调整主断点到800px */
+    .main {
+        flex-direction: column; /* 竖直排列 */
+        width: 100%; /* 使用全宽 */
+        margin: 0 auto;
+        border-radius: 0; /* 移除圆角更符合移动端 */
+    }
+
+    #home-img {
+        width: 60vw !important; /* 移动端适当放大图片 */
+        margin: 20px auto !important; /* 保持居中 */
+    }
+
+    #home-content {
+        width: 90% !important; /* 增加内容区域宽度 */
+        margin: 20px auto !important; /* 保持居中 */
+    }
+}
+
+/* 新增：超小屏幕适配 */
+@media (max-width: 450px) { /* 专门针对小屏幕手机 */
+    #home-img {
+        width: 90% !important; /* 进一步放大图片 */
+        margin: 10px auto !important;
+    }
+
+    #home-content {
+        padding: 15px !important;
+        margin: 10px auto !important;
+    }
+
+    #home-content a {
+        width: 90% !important; /* 按钮宽度适应屏幕 */
+    }
+}
+
+/* 修改原有媒体查询 */
+@media (max-width: 768px) {
+    /* 保持你原有的导航样式不变 */
+    /* 新增以下内容 */
+    .main {
+        background: linear-gradient(227deg, #165b9c 20.72%, #81bee4 78.01%); /* 保持渐变一致 */
+    }
+
+    #home-content h1 {
+        font-size: clamp(35px, 8vw, 60px); /* 加大移动端标题 */
+    }
+}

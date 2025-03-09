@@ -52,7 +52,7 @@ h1{
     margin:auto;
     /*margin-top: 0.2em;*/
     /*margin-bottom: 0.2em;*/
-    padding: 0.2em;
+    /*padding: 0.2em;*/
     background-color: #4CAF50;
     color: white;
     text-decoration: none;
@@ -60,7 +60,7 @@ h1{
     font-size: clamp(5em, 3vw, 25px);
     align-self: center;
     font-family: "Gochi Hand", cursive;
-    width: 12em;
+    /*width: 12em;*/
     
 }
 
