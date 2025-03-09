@@ -1,8 +1,20 @@
 {
+  "name": "rubik-s-cube-AR",
+  "version": "1.0.0",
+  "scripts": {
+    "start:frontend": "cd frontend && npm run dev",
+    "start:backend": "cd backend && npm start",
+    "start:colour": "cd colour-detection-cube-solver && python3 colour.py",
+    "start": "concurrently \"npm:start:frontend\" \"npm:start:backend\" \"npm:start:colour\"",
+    "stop": "pkill -f 'npm run dev' && pkill -f 'npm start' && pkill -f 'python3 colour.py'"
+  },
   "dependencies": {
     "aframe": "^1.7.0",
     "axios": "^1.8.2",
     "nodemon": "^3.1.9",
     "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
   }
 }
