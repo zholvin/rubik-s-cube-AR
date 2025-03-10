@@ -5,11 +5,18 @@
 [![Issues][issues-shield]][issues-url]
 [![MIT License][license-shield]][license-url]
 
+## Table of Contents
+
+- [1. Overview](#1-overview)
+- [2. Getting Started](#2-getting-started)
+- [3. Components](#3-components)
+- [4. Challenges and Solutions](#4-challenges-and-solutions)
+- [5. Team Contributions](#5-team-contributions)
+
 ## 1. Overview
 Transforming Rubik’s Cube Solving with Augmented Reality. This project leverages Augmented Reality (AR), advanced color detection, and an efficient solving algorithm to create an interactive and educational Rubik’s Cube solving experience.
 
-## 2. Getting Started (使用指南)
-
+## 2. Getting Started
 
 ## 3. Components
 - Color Detection
@@ -34,7 +41,6 @@ Transforming Rubik’s Cube Solving with Augmented Reality. This project leverag
 - **Daniel Jack Flynn**
 - **Darragh Micheal Broderick**
 
-
 <!-- links -->
 [your-project-path]:mohamad03aldawamnah/rubik-s-cube-AR
 [contributors-shield]: https://img.shields.io/github/contributors/mohamad03aldawamnah/rubik-s-cube-AR.svg?style=flat-square
@@ -44,6 +50,6 @@ Transforming Rubik’s Cube Solving with Augmented Reality. This project leverag
 [stars-shield]: https://img.shields.io/github/stars/mohamad03aldawamnah/rubik-s-cube-AR.svg?style=flat-square
 [stars-url]: https://github.com/mohamad03aldawamnah/rubik-s-cube-AR/stargazers
 [issues-shield]: https://img.shields.io/github/issues/mohamad03aldawamnah/rubik-s-cube-AR.svg?style=flat-square
-[issues-url]: https://img.shields.io/github/issues/mohamad03aldawamnah/rubik-s-cube-AR.svg
+[issues-url]: https://github.com/mohamad03aldawamnah/rubik-s-cube-AR/issues
 [license-shield]: https://img.shields.io/github/license/mohamad03aldawamnah/rubik-s-cube-AR.svg?style=flat-square
 [license-url]: https://github.com/mohamad03aldawamnah/rubik-s-cube-AR/blob/master/LICENSE.txt
